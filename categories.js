@@ -8,6 +8,7 @@ module.exports = {
 	game: 'Q11410',
 	instrument: 'Q34379',
 	tool: 'Q39546',
+	toy: 'Q11422',
 	vehicle: 'Q42889',
 	weapon: 'Q728'
 }

@@ -5,6 +5,7 @@ computer - send some computers
 creature - send some fishes and more
 food - Send some soups
 game - send me some mindbenders
+toy - send me some cuddly toys
 instrument - send some harp
 tool - Send some scissors
 vehicle - send some planes
