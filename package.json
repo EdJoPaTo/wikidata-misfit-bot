@@ -14,7 +14,7 @@
 	},
 	"scripts": {
 		"start": "node index.js",
-		"test": "xo && ava"
+		"test": "xo"
 	},
 	"files": [
 		"index.js"
@@ -24,15 +24,14 @@
 		"wikidataulm"
 	],
 	"config": {
-    "tokenpath": "/run/secrets/wikidata-misfit-bot-token.txt",
-  },
+		"tokenpath": "/run/secrets/wikidata-misfit-bot-token.txt"
+	},
 	"dependencies": {
 		"got": "^9.6.0",
 		"telegraf": "^3.27.1",
 		"wikidata-sdk": "^5.15.10"
 	},
 	"devDependencies": {
-		"ava": "^1.2.1",
 		"xo": "^0.24.0"
 	},
 	"xo": {
