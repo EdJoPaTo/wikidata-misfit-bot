@@ -1,0 +1,138 @@
+const Telegraf = require('telegraf')
+
+const {
+	getTopCategories,
+	getSubCategories,
+	getItems,
+	getLabel,
+	getImages
+} = require('./queries')
+
+const {Extra, Markup} = Telegraf
+
+async function labeledItem(item, lang) {
+	return `*${await getLabel(item, lang)}* [${item}](https://www.wikidata.org/wiki/${item})`
+}
+
+function getRandomEntries(arr, amount = 1) {
+	if (amount > arr.length) {
+		throw new Error('amount < arr.length')
+	}
+
+	const randomIds = []
+	while (randomIds.length < amount) {
+		const rand = Math.floor(Math.random() * arr.length)
+		if (!randomIds.includes(rand)) {
+			randomIds.push(rand)
+		}
+	}
+
+	const entries = randomIds
+		.map(i => arr[i])
+
+	return entries
+}
+
+function getLang(ctx) {
+	const lang = ctx.from.language_code
+	return lang.split('-')[0]
+}
+
+async function send(ctx, topCategoryKind) {
+	const lang = getLang(ctx)
+
+	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]
+	const subCategories = getRandomEntries(await getSubCategories(topCategory, 3), 2)
+
+	const correctItems = getRandomEntries(await getItems(subCategories[0]), 3)
+	const badItem = getRandomEntries(await getItems(subCategories[1]))[0]
+
+	const items = [
+		...correctItems
+	]
+	items.splice(Math.floor(Math.random() * 3), 0, badItem)
+
+	const mediaArr = await Promise.all(
+		items.map(o => buildEntry(o, lang))
+	)
+
+	let text = ''
+	text += await labeledItem(topCategory, lang)
+
+	text += '\n\n'
+	text += mediaArr
+		.map(o => o.caption)
+		.join('\n')
+
+	const keyboard = Markup.inlineKeyboard(
+		items.map((o, i) => {
+			const text = `🚫 ${i + 1}`
+			if (o === badItem) {
+				return Markup.callbackButton(text, `a:${subCategories[0]}:${subCategories[1]}:${badItem}`)
+			}
+
+			return Markup.callbackButton(text, 'a-no')
+		})
+	)
+
+	ctx.replyWithChatAction('upload_photo')
+	const msg = await ctx.replyWithMediaGroup(mediaArr)
+	await ctx.reply(text, Extra.markdown().markup(keyboard).webPreview(false).inReplyTo(msg[0].message_id))
+}
+
+async function buildEntry(item, lang) {
+	const imageUrl = getRandomEntries(await getImages(item))[0]
+	const caption = await labeledItem(item, lang)
+
+	return {
+		type: 'photo',
+		media: imageUrl,
+		caption,
+		parse_mode: 'Markdown'
+	}
+}
+
+const bot = new Telegraf.Composer()
+
+bot.action('a-no', ctx => ctx.answerCbQuery('👎'))
+
+bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async ctx => {
+	const correctCategory = ctx.match[1]
+	const badCategory = ctx.match[2]
+	const badItem = ctx.match[3]
+	const lang = getLang(ctx)
+
+	const originalItems = ctx.callbackQuery.message.entities
+		.filter(o => o.url)
+		.map(o => o.url.split('/').slice(-1)[0])
+
+	let text = ''
+	text += await labeledItem(originalItems[0], lang)
+
+	text += '\n\n'
+	const oldLines = await Promise.all(
+		originalItems
+			.slice(1)
+			.map(async o => {
+				const emoji = o === badItem ? '🚫' : '✅'
+				return `${emoji} ${await labeledItem(o, lang)}`
+			})
+	)
+	text += oldLines
+		.join('\n')
+
+	text += '\n\n'
+	text += `✅3x ${await labeledItem(correctCategory, lang)}`
+	text += '\n'
+	text += `🚫1x ${await labeledItem(badCategory, lang)}`
+
+	return Promise.all([
+		ctx.editMessageText(text, Extra.markdown().webPreview(false)),
+		ctx.answerCbQuery('👍')
+	])
+})
+
+module.exports = {
+	bot,
+	send
+}

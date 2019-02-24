@@ -1,0 +1,11 @@
+animal - send some cuties
+car - Send some batman tumblers
+computer - send some computers
+creature - send some fishes and more
+food - Send some soups
+instrument - send some harp
+game - send me some mindbenders
+tool - Send some scissors
+vehicle - send some planes
+weapon - send some bombs
+help - Show help

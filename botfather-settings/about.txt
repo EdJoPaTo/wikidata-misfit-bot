@@ -1,0 +1,1 @@
+This bot sends you some wikidata item pictures. Find the Misfit!

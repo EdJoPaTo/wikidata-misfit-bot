@@ -1,0 +1,51 @@
+{
+	"name": "wikidata-misfit-bot",
+	"private": true,
+	"version": "0.0.0",
+	"license": "MIT",
+	"repository": "EdJoPaTo/wikidata-misfit-bot",
+	"author": {
+		"name": "Edgar Toll",
+		"email": "edjopato@gmail.com",
+		"url": "edjopato.de"
+	},
+	"engines": {
+		"node": ">=11"
+	},
+	"scripts": {
+		"start": "node index.js",
+		"test": "xo && ava"
+	},
+	"files": [
+		"index.js"
+	],
+	"keywords": [
+		"wikidata",
+		"wikidataulm"
+	],
+	"config": {
+    "tokenpath": "/run/secrets/wikidata-misfit-bot-token.txt",
+  },
+	"dependencies": {
+		"got": "^9.6.0",
+		"telegraf": "^3.27.1",
+		"wikidata-sdk": "^5.15.10"
+	},
+	"devDependencies": {
+		"ava": "^1.2.1",
+		"xo": "^0.24.0"
+	},
+	"xo": {
+		"semicolon": false,
+		"overrides": [
+			{
+				"files": [
+					"riddle.js"
+				],
+				"rules": {
+					"camelcase": "off"
+				}
+			}
+		]
+	}
+}
