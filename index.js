@@ -22,6 +22,7 @@ bot.use(riddle.bot)
 
 const types = {
 	animal: 'Q729',
+	building: 'Q41176',
 	car: 'Q1420',
 	computer: 'Q68',
 	creature: 'Q1274979',
