@@ -3,6 +3,7 @@ const fs = require('fs')
 const Telegraf = require('telegraf')
 
 const riddle = require('./riddle')
+const categories = require('./categories')
 const {getTopCategories} = require('./queries')
 
 const tokenFilePath = process.env.NODE_ENV === 'production' ? process.env.npm_package_config_tokenpath : 'token.txt'
@@ -20,28 +21,14 @@ bot.use(async (ctx, next) => {
 
 bot.use(riddle.bot)
 
-const types = {
-	animal: 'Q729',
-	building: 'Q41176',
-	car: 'Q1420',
-	computer: 'Q68',
-	creature: 'Q1274979',
-	food: 'Q2095',
-	game: 'Q11410',
-	instrument: 'Q34379',
-	tool: 'Q39546',
-	vehicle: 'Q42889',
-	weapon: 'Q728'
-}
-
 Promise.all(
-	Object.keys(types).map(o => getTopCategories(o))
+	Object.keys(categories).map(o => getTopCategories(o))
 ).then(() => {
 	console.log('cache filled')
 })
 
-for (const t of Object.keys(types)) {
-	bot.command(t, ctx => riddle.send(ctx, types[t]))
+for (const t of Object.keys(categories)) {
+	bot.command(t, ctx => riddle.send(ctx, categories[t]))
 }
 
 bot.command('help', ctx => {
