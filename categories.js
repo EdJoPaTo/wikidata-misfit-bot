@@ -1,5 +1,6 @@
 module.exports = {
 	animal: 'Q729',
+	art: 'Q838948',
 	building: 'Q41176',
 	car: 'Q1420',
 	computer: 'Q68',

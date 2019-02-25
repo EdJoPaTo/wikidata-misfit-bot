@@ -1,4 +1,5 @@
 animal - send some cuties
+art - Send some monuments
 building - send some temples
 car - Send some batman tumblers
 computer - send some computers
