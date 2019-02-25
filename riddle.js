@@ -38,9 +38,7 @@ function getLang(ctx) {
 	return lang.split('-')[0]
 }
 
-async function send(ctx, topCategoryKind) {
-	const lang = getLang(ctx)
-
+async function create(topCategoryKind, lang) {
 	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]
 	const subCategories = getRandomEntries(await getSubCategories(topCategory, 3), 2)
 
@@ -75,7 +73,19 @@ async function send(ctx, topCategoryKind) {
 		})
 	)
 
-	ctx.replyWithChatAction('upload_photo')
+	return {
+		keyboard,
+		mediaArr,
+		text
+	}
+}
+
+async function send(ctx, topCategoryKind) {
+	const lang = getLang(ctx)
+
+	const {mediaArr, text, keyboard} = await create(topCategoryKind, lang)
+	await ctx.replyWithChatAction('upload_photo')
+
 	const msg = await ctx.replyWithMediaGroup(mediaArr)
 	await ctx.reply(text, Extra.markdown().markup(keyboard).webPreview(false).inReplyTo(msg[0].message_id))
 }
