@@ -28,7 +28,22 @@ Promise.all(
 })
 
 for (const t of Object.keys(categories)) {
-	bot.command(t, ctx => riddle.send(ctx, categories[t]))
+	bot.command(t, ctx => endlessFailing(ctx, categories[t]))
+}
+
+async function endlessFailing(ctx, categoryQNumber) {
+	/* Reasons can be
+	- Image is SVG, Telegram does not support SVG
+	- Image was not successfully loaded by Telegram fast enough
+	- undefined internet witchcraft
+	*/
+	try {
+		await riddle.send(ctx, categoryQNumber)
+		return
+	} catch (error) {
+		console.log('endlessFailing', error.message)
+		await endlessFailing(ctx, categoryQNumber)
+	}
 }
 
 bot.command(['start', 'help'], ctx => {
