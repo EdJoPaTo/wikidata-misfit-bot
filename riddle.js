@@ -106,7 +106,7 @@ const bot = new Telegraf.Composer()
 
 bot.action('a-no', ctx => ctx.answerCbQuery('👎'))
 
-bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async ctx => {
+bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx, next) => {
 	const correctCategory = ctx.match[1]
 	const badCategory = ctx.match[2]
 	const badItem = ctx.match[3]
@@ -136,10 +136,11 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async ctx => {
 	text += '\n'
 	text += `🚫1x ${await labeledItem(badCategory, lang)}`
 
-	return Promise.all([
+	await Promise.all([
 		ctx.editMessageText(text, Extra.markdown().webPreview(false)),
 		ctx.answerCbQuery('👍')
 	])
+	return next()
 })
 
 module.exports = {

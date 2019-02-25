@@ -1,18 +1,2 @@
-animal - send some cuties
-art - Send some monuments
-building - send some temples
-car - Send some batman tumblers
-company - send your local supermarket
-computer - send some computers
-creature - send some fishes and more
-food - Send some soups
-game - send me some mindbenders
-instrument - send some harp
-organisation - send wikimedia
-spacecraft - send some space shuttles
-tool - Send some scissors
-town - Send some cities
-toy - send me some cuddly toys
-vehicle - send some planes
-weapon - send some bombs
+start - show the category selector
 help - Show help
