@@ -14,7 +14,7 @@ async function getTopCategories(topCategoryKind) {
 	const query = `SELECT ?topclass
 	WHERE {
 		SELECT ?topclass ?middleclass WHERE {
-			?topclass wdt:P279+ wd:${topCategoryKind}.
+			?topclass wdt:P279* wd:${topCategoryKind}.
 			?middleclass wdt:P279 ?topclass.
 			?item wdt:P279 ?middleclass.
 			FILTER EXISTS {?item wdt:P18 ?image}.
