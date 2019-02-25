@@ -14,7 +14,7 @@ bot.use(async (ctx, next) => {
 	try {
 		await next()
 	} catch (error) {
-		console.log('try send error', error)
+		console.log('try send error', error && error.on && error.on.payload && error.on.payload.media, error)
 		await ctx.reply('😣 This happens… Please try again.')
 	}
 })

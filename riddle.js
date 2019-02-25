@@ -16,7 +16,7 @@ async function labeledItem(item, lang) {
 
 function getRandomEntries(arr, amount = 1) {
 	if (amount > arr.length) {
-		throw new Error('amount < arr.length')
+		throw new Error(`amount (${amount}) < arr.length (${arr.length})`)
 	}
 
 	const randomIds = []
