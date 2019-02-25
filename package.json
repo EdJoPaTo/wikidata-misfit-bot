@@ -27,12 +27,12 @@
 		"tokenpath": "/run/secrets/wikidata-misfit-bot-token.txt"
 	},
 	"dependencies": {
-		"ava": "^1.2.1",
 		"got": "^9.6.0",
 		"telegraf": "^3.27.1",
 		"wikidata-sdk": "^5.15.10"
 	},
 	"devDependencies": {
+		"ava": "^1.2.1",
 		"xo": "^0.24.0"
 	},
 	"xo": {
