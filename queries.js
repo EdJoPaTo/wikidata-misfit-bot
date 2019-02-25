@@ -1,35 +1,31 @@
 const wdk = require('wikidata-sdk')
 const got = require('got')
 
+const cacheMap = new Map()
+
 async function getSimplifiedQueryResults(query) {
 	const url = wdk.sparqlQuery(query)
-	const {body} = await got(url)
+	const {body} = await got(url, {cache: cacheMap})
 	const simplified = wdk.simplify.sparqlResults(body)
 	return simplified
 }
 
-const topCategoryCache = {}
-
 async function getTopCategories(topCategoryKind) {
-	if (!topCategoryCache[topCategoryKind]) {
-		const query = `SELECT ?topclass
-		WHERE {
-			SELECT ?topclass ?middleclass WHERE {
-				?topclass wdt:P279+ wd:${topCategoryKind}.
-				?middleclass wdt:P279 ?topclass.
-				?item wdt:P279 ?middleclass.
-				FILTER EXISTS {?item wdt:P18 ?image}.
-			}
-			GROUP BY ?topclass ?middleclass
-			HAVING(COUNT(?item) >= 3)
+	const query = `SELECT ?topclass
+	WHERE {
+		SELECT ?topclass ?middleclass WHERE {
+			?topclass wdt:P279+ wd:${topCategoryKind}.
+			?middleclass wdt:P279 ?topclass.
+			?item wdt:P279 ?middleclass.
+			FILTER EXISTS {?item wdt:P18 ?image}.
 		}
-		GROUP BY ?topclass
-		HAVING(COUNT(?middleclass) >= 2)`
-
-		topCategoryCache[topCategoryKind] = await getSimplifiedQueryResults(query)
+		GROUP BY ?topclass ?middleclass
+		HAVING(COUNT(?item) >= 3)
 	}
+	GROUP BY ?topclass
+	HAVING(COUNT(?middleclass) >= 2)`
 
-	return topCategoryCache[topCategoryKind]
+	return getSimplifiedQueryResults(query)
 }
 
 async function getSubCategories(topCategory, minItems) {
