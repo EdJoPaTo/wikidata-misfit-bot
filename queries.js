@@ -3,9 +3,14 @@ const got = require('got')
 
 const cacheMap = new Map()
 
-async function getSimplifiedQueryResults(query) {
+async function getSimplifiedQueryResults(query, caching = true) {
 	const url = wdk.sparqlQuery(query)
-	const {body, retryCount, fromCache, timings} = await got(url, {cache: cacheMap})
+	const options = {}
+	if (caching) {
+		options.cache = cacheMap
+	}
+
+	const {body, retryCount, fromCache, timings} = await got(url, options)
 	const result = wdk.simplify.sparqlResults(body)
 	return {
 		fromCache,
