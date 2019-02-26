@@ -50,7 +50,7 @@ async function pickItems(correctQNumber, differentQNumber) {
 	const items = [
 		...correctItems
 	]
-	items.splice(Math.floor(Math.random() * 3), 0, differentItem)
+	items.splice(Math.floor(Math.random() * (items.length + 1)), 0, differentItem)
 
 	return {
 		differentItem,
