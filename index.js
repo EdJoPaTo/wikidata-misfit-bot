@@ -12,6 +12,11 @@ const tokenFilePath = process.env.NODE_ENV === 'production' ? process.env.npm_pa
 const token = fs.readFileSync(tokenFilePath, 'utf8').trim()
 const bot = new Telegraf(token)
 
+// For handling group/supergroup commands (/start@your_bot) you need to provide bot username.
+bot.telegram.getMe().then(botInfo => {
+	bot.options.username = botInfo.username
+})
+
 bot.use(async (ctx, next) => {
 	try {
 		await next()
