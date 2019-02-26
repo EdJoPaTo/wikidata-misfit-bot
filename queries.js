@@ -91,7 +91,7 @@ WHERE {
   SERVICE wikibase:label { bd:serviceParam wikibase:language "${language.join(',')}". }
 }`
 	const response = await getSimplifiedQueryResults(query)
-	logResponse(response, 'getLabel', item, language)
+	logResponse(response, 'getLabel', item, language, response.result[0])
 	return response.result[0]
 }
 
