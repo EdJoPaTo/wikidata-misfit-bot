@@ -60,7 +60,7 @@ async function pickItems(correctQNumber, differentQNumber) {
 
 async function create(topCategoryKind, lang) {
 	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]
-	const subCategories = getRandomEntries(await getSubCategories(topCategory, 3), 2)
+	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
 	const {items, differentItem} = await pickItems(...subCategories)
 
 	const mediaArr = await Promise.all(
