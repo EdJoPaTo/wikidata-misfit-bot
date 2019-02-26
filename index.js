@@ -37,6 +37,7 @@ async function endlessFailing(ctx, categoryQNumber) {
 	/* Reasons can be
 	- Image is SVG, Telegram does not support SVG
 	- Image was not successfully loaded by Telegram fast enough
+	- Telegram supports only up to 5MB images via URL
 	- undefined internet witchcraft
 	*/
 	try {
