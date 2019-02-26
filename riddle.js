@@ -38,17 +38,30 @@ function getLang(ctx) {
 	return lang.split('-')[0]
 }
 
-async function create(topCategoryKind, lang) {
-	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]
-	const subCategories = getRandomEntries(await getSubCategories(topCategory, 3), 2)
+async function pickItems(correctQNumber, differentQNumber) {
+	const [allCorrect, allDifferent] = await Promise.all([
+		getItems(correctQNumber),
+		getItems(differentQNumber)
+	])
 
-	const correctItems = getRandomEntries(await getItems(subCategories[0]), 3)
-	const badItem = getRandomEntries(await getItems(subCategories[1]))[0]
+	const correctItems = getRandomEntries(allCorrect, 3)
+	const differentItem = getRandomEntries(allDifferent)[0]
 
 	const items = [
 		...correctItems
 	]
-	items.splice(Math.floor(Math.random() * 3), 0, badItem)
+	items.splice(Math.floor(Math.random() * 3), 0, differentItem)
+
+	return {
+		differentItem,
+		items
+	}
+}
+
+async function create(topCategoryKind, lang) {
+	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]
+	const subCategories = getRandomEntries(await getSubCategories(topCategory, 3), 2)
+	const {items, differentItem} = await pickItems(...subCategories)
 
 	const mediaArr = await Promise.all(
 		items.map(o => buildEntry(o, lang))
@@ -65,8 +78,8 @@ async function create(topCategoryKind, lang) {
 	const keyboard = Markup.inlineKeyboard(
 		items.map((o, i) => {
 			const text = `🚫 ${i + 1}`
-			if (o === badItem) {
-				return Markup.callbackButton(text, `a:${subCategories[0]}:${subCategories[1]}:${badItem}`)
+			if (o === differentItem) {
+				return Markup.callbackButton(text, `a:${subCategories[0]}:${subCategories[1]}:${differentItem}`)
 			}
 
 			return Markup.callbackButton(text, 'a-no')
