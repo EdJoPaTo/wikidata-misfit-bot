@@ -5,9 +5,20 @@ const cacheMap = new Map()
 
 async function getSimplifiedQueryResults(query) {
 	const url = wdk.sparqlQuery(query)
-	const {body} = await got(url, {cache: cacheMap})
-	const simplified = wdk.simplify.sparqlResults(body)
-	return simplified
+	const {body, retryCount, fromCache, timings} = await got(url, {cache: cacheMap})
+	const result = wdk.simplify.sparqlResults(body)
+	return {
+		fromCache,
+		result,
+		retryCount,
+		timing: ((timings || {}).phases || {}).total || 0
+	}
+}
+
+function logResponse({fromCache, retryCount, timing}, ...additionals) {
+	if (!fromCache && process.env.NODE_ENV !== 'production') {
+		console.log(new Date(), retryCount, timing, ...additionals)
+	}
 }
 
 async function getTopCategories(topCategoryKind) {
@@ -25,7 +36,9 @@ async function getTopCategories(topCategoryKind) {
 	GROUP BY ?topclass
 	HAVING(COUNT(?middleclass) >= 2)`
 
-	return getSimplifiedQueryResults(query)
+	const response = await getSimplifiedQueryResults(query)
+	logResponse(response, 'getTopCategories', topCategoryKind)
+	return response.result
 }
 
 async function getSubCategories(topCategory, minItems) {
@@ -38,8 +51,9 @@ WHERE {
 GROUP BY ?middleclass
 HAVING(COUNT(?item) >= ${minItems})`
 
-	const results = await getSimplifiedQueryResults(query)
-	return results
+	const response = await getSimplifiedQueryResults(query)
+	logResponse(response, 'getSubCategories', topCategory)
+	return response.result
 }
 
 async function getItems(parentItem) {
@@ -49,8 +63,9 @@ WHERE {
 	FILTER EXISTS {?item wdt:P18 ?image}.
 }`
 
-	const results = await getSimplifiedQueryResults(query)
-	return results
+	const response = await getSimplifiedQueryResults(query)
+	logResponse(response, 'getItems', parentItem)
+	return response.result
 }
 
 async function getLabel(item, language) {
@@ -59,8 +74,9 @@ WHERE {
   BIND (wd:${item} as ?item)
   SERVICE wikibase:label { bd:serviceParam wikibase:language "${language},en". }
 }`
-	const result = await getSimplifiedQueryResults(query)
-	return result[0]
+	const response = await getSimplifiedQueryResults(query)
+	logResponse(response, 'getLabel', item, language)
+	return response.result[0]
 }
 
 async function getImages(item) {
@@ -69,8 +85,9 @@ WHERE {
   BIND (wd:${item} as ?item)
   ?item wdt:P18 ?image.
 }`
-	const result = await getSimplifiedQueryResults(query)
-	return result
+	const response = await getSimplifiedQueryResults(query)
+	logResponse(response, 'getImages', item)
+	return response.result
 }
 
 module.exports = {
