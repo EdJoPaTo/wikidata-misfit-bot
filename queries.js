@@ -73,11 +73,15 @@ WHERE {
 	return response.result
 }
 
-async function getLabel(item, language) {
+async function getLabel(item, ...language) {
+	if (!language.includes('en')) {
+		language.push('en')
+	}
+
 	const query = `SELECT ?itemLabel
 WHERE {
   BIND (wd:${item} as ?item)
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "${language},en". }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "${language.join(',')}". }
 }`
 	const response = await getSimplifiedQueryResults(query)
 	logResponse(response, 'getLabel', item, language)
