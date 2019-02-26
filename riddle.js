@@ -126,23 +126,29 @@ bot.action('a-no', ctx => ctx.answerCbQuery('👎'))
 
 bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx, next) => {
 	const correctCategory = ctx.match[1]
-	const badCategory = ctx.match[2]
-	const badItem = ctx.match[3]
+	const differentCategory = ctx.match[2]
+	const differentItem = ctx.match[3]
 	const lang = getLang(ctx)
 
 	const originalItems = ctx.callbackQuery.message.entities
 		.filter(o => o.url)
 		.map(o => o.url.split('/').slice(-1)[0])
 
+	const [mainCategoryLabel, correctCategoryLabel, differentCategoryLabel] = await Promise.all([
+		labeledItem(originalItems[0], lang),
+		labeledItem(correctCategory, lang),
+		labeledItem(differentCategory, lang)
+	])
+
 	let text = ''
-	text += await labeledItem(originalItems[0], lang)
+	text += mainCategoryLabel
 
 	text += '\n\n'
 	const oldLines = await Promise.all(
 		originalItems
 			.slice(1)
 			.map(async o => {
-				const emoji = o === badItem ? '🚫' : '✅'
+				const emoji = o === differentItem ? '🚫' : '✅'
 				return `${emoji} ${await labeledItem(o, lang)}`
 			})
 	)
@@ -150,9 +156,9 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx, next) => {
 		.join('\n')
 
 	text += '\n\n'
-	text += `✅3x ${await labeledItem(correctCategory, lang)}`
+	text += `✅3x ${correctCategoryLabel}`
 	text += '\n'
-	text += `🚫1x ${await labeledItem(badCategory, lang)}`
+	text += `🚫1x ${differentCategoryLabel}`
 
 	await Promise.all([
 		ctx.editMessageText(text, Extra.markdown().webPreview(false)),
