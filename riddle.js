@@ -104,8 +104,12 @@ async function send(ctx, topCategoryKind) {
 }
 
 async function buildEntry(item, lang) {
-	const imageUrl = getRandomEntries(await getImages(item))[0]
-	const caption = await labeledItem(item, lang)
+	const [images, caption] = await Promise.all([
+		getImages(item),
+		labeledItem(item, lang)
+	])
+
+	const imageUrl = getRandomEntries(images)[0]
 
 	return {
 		type: 'photo',
