@@ -32,7 +32,9 @@ async function getTopCategories(topCategoryKind) {
 		SELECT ?topclass ?middleclass WHERE {
 			?topclass wdt:P279* wd:${topCategoryKind}.
 			?middleclass wdt:P279 ?topclass.
-			?item wdt:P31 ?middleclass.
+			{ ?item wdt:P31 ?middleclass. }
+			UNION
+			{ ?item wdt:P279+ ?middleclass. }
 			FILTER EXISTS {?item wdt:P18 ?image}.
 		}
 		GROUP BY ?topclass ?middleclass
@@ -50,7 +52,9 @@ async function getSubCategories(topCategory, minItems) {
 	const query = `SELECT ?middleclass
 WHERE {
   ?middleclass wdt:P279 wd:${topCategory}.
-  ?item wdt:P31 ?middleclass.
+	{ ?item wdt:P31 ?middleclass. }
+	UNION
+	{ ?item wdt:P279+ ?middleclass. }
   FILTER EXISTS {?item wdt:P18 ?image}.
 }
 GROUP BY ?middleclass
@@ -64,7 +68,10 @@ HAVING(COUNT(?item) >= ${minItems})`
 async function getItems(parentItem) {
 	const query = `SELECT ?item
 WHERE {
-	?item wdt:P31 wd:${parentItem}.
+	BIND (wd:${parentItem} as ?class)
+	{ ?item wdt:P31 ?class. }
+	UNION
+	{ ?item wdt:P279+ ?class. }
 	FILTER EXISTS {?item wdt:P18 ?image}.
 }`
 
