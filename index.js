@@ -24,7 +24,10 @@ bot.use(async (ctx, next) => {
 bot.use(riddle.bot)
 
 Promise.all(
-	Object.values(categories).map(o => getTopCategories(o))
+	Object.values(categories)
+		.map(o => getTopCategories(o)
+			.catch(() => {})
+		)
 ).then(() => {
 	console.log('cache filled')
 })
