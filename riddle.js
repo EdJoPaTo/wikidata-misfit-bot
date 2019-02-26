@@ -96,8 +96,9 @@ async function create(topCategoryKind, lang) {
 async function send(ctx, topCategoryKind) {
 	const lang = getLang(ctx)
 
+	ctx.replyWithChatAction('upload_photo').catch(() => {})
 	const {mediaArr, text, keyboard} = await create(topCategoryKind, lang)
-	await ctx.replyWithChatAction('upload_photo')
+	ctx.replyWithChatAction('upload_photo').catch(() => {})
 
 	const msg = await ctx.replyWithMediaGroup(mediaArr)
 	await ctx.reply(text, Extra.markdown().markup(keyboard).webPreview(false).inReplyTo(msg[0].message_id))

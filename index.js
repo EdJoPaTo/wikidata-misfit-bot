@@ -61,6 +61,7 @@ async function selectorKeyboard(lang) {
 }
 
 bot.action(/category:(Q\d+)/, ctx => {
+	ctx.answerCbQuery().catch(() => {})
 	ctx.editMessageText('One of the images does not fit…')
 		.catch(() => {})
 	return endlessFailing(ctx, ctx.match[1])
