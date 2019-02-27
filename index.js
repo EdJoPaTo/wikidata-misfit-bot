@@ -85,14 +85,16 @@ bot.command(['start', 'help'], async ctx => {
 		text += 'Also you can send Pull Requests for this bot at https://github.com/EdJoPaTo/wikidata-misfit-bot. Maybe add another category. 🙃'
 	}
 
+	const lang = (ctx.from.language_code || 'en').split('-')[0]
 	return ctx.reply(text, Extra.webPreview(false).markup(
-		await selectorKeyboard(ctx.from.language_code.split('-')[0])
+		await selectorKeyboard(lang)
 	))
 })
 
 bot.action(/^a:.+/, Telegraf.privateChat(async ctx => {
+	const lang = (ctx.from.language_code || 'en').split('-')[0]
 	return ctx.reply('Another one?', Extra.markup(
-		await selectorKeyboard(ctx.from.language_code.split('-')[0])
+		await selectorKeyboard(lang)
 	))
 }))
 
