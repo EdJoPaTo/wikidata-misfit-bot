@@ -62,7 +62,9 @@ async function selectorKeyboard(lang) {
 		Object.values(categories)
 			.map(async o => Markup.callbackButton(await getLabel(o, lang), `category:${o}`))
 	)
-	return Markup.inlineKeyboard(buttons, {columns: 3})
+	const sorted = buttons
+		.sort((a, b) => a.text.localeCompare(b.text, lang))
+	return Markup.inlineKeyboard(sorted, {columns: 3})
 }
 
 bot.action(/category:(Q\d+)/, ctx => {
