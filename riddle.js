@@ -101,7 +101,7 @@ async function send(ctx, topCategoryKind) {
 	ctx.replyWithChatAction('upload_photo').catch(() => {})
 
 	const msg = await ctx.replyWithMediaGroup(mediaArr)
-	await ctx.reply(text, Extra.markdown().markup(keyboard).webPreview(false).inReplyTo(msg[0].message_id))
+	await ctx.reply(text, Extra.markdown().markup(keyboard).webPreview(false).inReplyTo(msg.slice(-1)[0].message_id))
 }
 
 async function buildEntry(item, lang) {
