@@ -2,9 +2,10 @@ const fs = require('fs')
 
 const Telegraf = require('telegraf')
 
-const riddle = require('./riddle')
 const categories = require('./categories')
-const {getTopCategories, getLabel} = require('./queries')
+const entities = require('./entities')
+const riddle = require('./riddle')
+const {getTopCategories} = require('./queries')
 
 const {Extra, Markup} = Telegraf
 
@@ -58,13 +59,11 @@ async function endlessFailing(ctx, categoryQNumber) {
 }
 
 async function selectorKeyboard(lang) {
-	const buttons = await Promise.all(
-		Object.values(categories)
-			.map(async o => Markup.callbackButton(await getLabel(o, lang), `category:${o}`))
-	)
-	const sorted = buttons
+	await entities.load(...Object.values(categories))
+	const buttons = Object.values(categories)
+		.map(o => Markup.callbackButton(entities.label(o, lang), `category:${o}`))
 		.sort((a, b) => a.text.localeCompare(b.text, lang))
-	return Markup.inlineKeyboard(sorted, {columns: 3})
+	return Markup.inlineKeyboard(buttons, {columns: 3})
 }
 
 bot.action(/category:(Q\d+)/, ctx => {

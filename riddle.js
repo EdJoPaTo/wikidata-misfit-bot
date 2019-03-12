@@ -1,17 +1,26 @@
 const Telegraf = require('telegraf')
 
+const entities = require('./entities')
 const {
 	getTopCategories,
 	getSubCategories,
-	getItems,
-	getLabel,
-	getImages
+	getItems
 } = require('./queries')
 
 const {Extra, Markup} = Telegraf
 
-async function labeledItem(item, lang) {
-	return `*${await getLabel(item, lang)}* [${item}](https://www.wikidata.org/wiki/${item})`
+function labeledItem(item, lang) {
+	const label = entities.label(item, lang)
+	const description = entities.description(item, lang)
+	const url = `https://www.wikidata.org/wiki/${item}`
+
+	let text = `*${label}* [${item}](${url})`
+
+	if (description) {
+		text += `\n  ${description}`
+	}
+
+	return text
 }
 
 function getRandomEntries(arr, amount = 1) {
@@ -63,12 +72,12 @@ async function create(topCategoryKind, lang) {
 	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
 	const {items, differentItem} = await pickItems(...subCategories)
 
-	const mediaArr = await Promise.all(
-		items.map(o => buildEntry(o, lang))
-	)
+	await entities.load(topCategory, ...subCategories, ...items, differentItem)
+
+	const mediaArr = items.map(o => buildEntry(o, lang))
 
 	let text = ''
-	text += await labeledItem(topCategory, lang)
+	text += labeledItem(topCategory, lang)
 
 	text += '\n\n'
 	text += mediaArr
@@ -104,11 +113,9 @@ async function send(ctx, topCategoryKind) {
 	await ctx.reply(text, Extra.markdown().markup(keyboard).webPreview(false).inReplyTo(msg.slice(-1)[0].message_id))
 }
 
-async function buildEntry(item, lang) {
-	const [images, caption] = await Promise.all([
-		getImages(item),
-		labeledItem(item, lang)
-	])
+function buildEntry(item, lang) {
+	const images = entities.images(item, 800)
+	const caption = labeledItem(item, lang)
 
 	const imageUrl = getRandomEntries(images)[0]
 
@@ -134,11 +141,11 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx, next) => {
 		.filter(o => o.url)
 		.map(o => o.url.split('/').slice(-1)[0])
 
-	const [mainCategoryLabel, correctCategoryLabel, differentCategoryLabel] = await Promise.all([
-		labeledItem(originalItems[0], lang),
-		labeledItem(correctCategory, lang),
-		labeledItem(differentCategory, lang)
-	])
+	await entities.load(correctCategory, differentCategory, ...originalItems)
+
+	const mainCategoryLabel = labeledItem(originalItems[0], lang)
+	const correctCategoryLabel = labeledItem(correctCategory, lang)
+	const differentCategoryLabel = labeledItem(differentCategory, lang)
 
 	let text = ''
 	text += mainCategoryLabel
@@ -149,7 +156,7 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx, next) => {
 			.slice(1)
 			.map(async o => {
 				const emoji = o === differentItem ? '🚫' : '✅'
-				return `${emoji} ${await labeledItem(o, lang)}`
+				return `${emoji} ${labeledItem(o, lang)}`
 			})
 	)
 	text += oldLines

@@ -80,36 +80,8 @@ WHERE {
 	return response.result
 }
 
-async function getLabel(item, ...language) {
-	if (!language.includes('en')) {
-		language.push('en')
-	}
-
-	const query = `SELECT ?itemLabel
-WHERE {
-  BIND (wd:${item} as ?item)
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "${language.join(',')}". }
-}`
-	const response = await getSimplifiedQueryResults(query)
-	logResponse(response, 'getLabel', item, language, response.result[0])
-	return response.result[0]
-}
-
-async function getImages(item) {
-	const query = `SELECT ?image
-WHERE {
-  BIND (wd:${item} as ?item)
-  ?item wdt:P18 ?image.
-}`
-	const response = await getSimplifiedQueryResults(query)
-	logResponse(response, 'getImages', item)
-	return response.result
-}
-
 module.exports = {
 	getTopCategories,
 	getSubCategories,
-	getItems,
-	getLabel,
-	getImages
+	getItems
 }
