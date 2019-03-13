@@ -34,7 +34,7 @@ async function getTopCategories(topCategoryKind) {
 			?middleclass wdt:P279 ?topclass.
 			{ ?item wdt:P31 ?middleclass. }
 			UNION
-			{ ?item wdt:P279+ ?middleclass. }
+			{ ?item wdt:P279 ?middleclass. }
 			FILTER EXISTS {?item wdt:P18 ?image}.
 		}
 		GROUP BY ?topclass ?middleclass
@@ -54,7 +54,7 @@ WHERE {
   ?middleclass wdt:P279 wd:${topCategory}.
 	{ ?item wdt:P31 ?middleclass. }
 	UNION
-	{ ?item wdt:P279+ ?middleclass. }
+	{ ?item wdt:P279 ?middleclass. }
   FILTER EXISTS {?item wdt:P18 ?image}.
 }
 GROUP BY ?middleclass
@@ -71,7 +71,7 @@ WHERE {
 	BIND (wd:${parentItem} as ?class)
 	{ ?item wdt:P31 ?class. }
 	UNION
-	{ ?item wdt:P279+ ?class. }
+	{ ?item wdt:P279 ?class. }
 	FILTER EXISTS {?item wdt:P18 ?image}.
 }`
 
