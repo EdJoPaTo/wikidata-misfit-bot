@@ -1,5 +1,4 @@
 module.exports = {
-	animal: 'Q729',
 	computer: 'Q68',
 	creature: 'Q1274979',
 	enterprise: 'Q6881511',
