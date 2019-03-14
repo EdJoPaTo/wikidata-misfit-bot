@@ -9,6 +9,7 @@ for (const category of Object.keys(categories)) {
 		const qNumber = categories[category]
 		const result = await getTopCategories(qNumber)
 		t.log(result.length)
+		t.log(result.join(' '))
 		t.true(result.length >= 5)
 	})
 }
