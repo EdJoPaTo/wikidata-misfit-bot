@@ -1,5 +1,6 @@
 module.exports = {
 	art: 'Q735',
+	astonomicalBody: 'Q6999',
 	computer: 'Q68',
 	creature: 'Q1274979',
 	enterprise: 'Q6881511',
