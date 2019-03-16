@@ -3,11 +3,10 @@ const got = require('got')
 
 const cacheMap = new Map()
 
-async function getSimplifiedQueryResults(query, caching = true) {
+async function getSimplifiedQueryResults(query) {
 	const url = wdk.sparqlQuery(query)
-	const options = {}
-	if (caching) {
-		options.cache = cacheMap
+	const options = {
+		cache: cacheMap
 	}
 
 	const {body, retryCount, fromCache, timings} = await got(url, options)
@@ -17,12 +16,6 @@ async function getSimplifiedQueryResults(query, caching = true) {
 		result,
 		retryCount,
 		timing: ((timings || {}).phases || {}).total || 0
-	}
-}
-
-function logResponse({fromCache, retryCount, timing}, ...additionals) {
-	if (!fromCache && process.env.NODE_ENV !== 'production') {
-		console.log(new Date(), retryCount, timing, ...additionals)
 	}
 }
 
@@ -44,7 +37,6 @@ async function getTopCategories(topCategoryKind) {
 	HAVING(COUNT(?middleclass) >= 2)`
 
 	const response = await getSimplifiedQueryResults(query)
-	logResponse(response, 'getTopCategories', topCategoryKind)
 	return response.result
 }
 
@@ -61,7 +53,6 @@ GROUP BY ?middleclass
 HAVING(COUNT(?item) >= 5)`
 
 	const response = await getSimplifiedQueryResults(query)
-	logResponse(response, 'getSubCategories', topCategory)
 	return response.result
 }
 
@@ -76,7 +67,6 @@ WHERE {
 }`
 
 	const response = await getSimplifiedQueryResults(query)
-	logResponse(response, 'getItems', parentItem)
 	return response.result
 }
 
