@@ -13,11 +13,11 @@
 		"node": ">=11"
 	},
 	"scripts": {
-		"start": "node index.js",
+		"start": "node source/index.js",
 		"test": "xo && ava"
 	},
 	"files": [
-		"index.js"
+		"dist"
 	],
 	"keywords": [
 		"wikidata",
