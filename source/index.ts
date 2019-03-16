@@ -1,16 +1,14 @@
-const fs = require('fs')
+import {readFileSync} from 'fs'
 
-const Telegraf = require('telegraf')
+import Telegraf, {Extra, Markup} from 'telegraf'
 
-const categories = require('./categories')
-const entities = require('./entities')
-const riddle = require('./riddle')
-const {getTopCategories} = require('./queries')
+import categories from './categories'
+import * as entities from './entities'
+import * as riddle from './riddle'
+import {getTopCategories} from './queries'
 
-const {Extra, Markup} = Telegraf
-
-const tokenFilePath = process.env.NODE_ENV === 'production' ? process.env.npm_package_config_tokenpath : 'token.txt'
-const token = fs.readFileSync(tokenFilePath, 'utf8').trim()
+const tokenFilePath = process.env.NODE_ENV === 'production' ? process.env.npm_package_config_tokenpath as string : 'token.txt'
+const token = readFileSync(tokenFilePath, 'utf8').trim()
 const bot = new Telegraf(token)
 
 // For handling group/supergroup commands (/start@your_bot) you need to provide bot username.
@@ -20,14 +18,16 @@ bot.telegram.getMe().then(botInfo => {
 
 bot.use(async (ctx, next) => {
 	try {
-		await next()
+		if (next) {
+			await next()
+		}
 	} catch (error) {
 		console.log('try send error', error && error.on && error.on.payload && error.on.payload.media, error)
 		await ctx.reply('😣 This happens… Please try again.')
 	}
 })
 
-bot.use(riddle.bot)
+bot.use(riddle.getBot() as any)
 
 Promise.all(
 	Object.values(categories)
@@ -42,7 +42,7 @@ for (const t of Object.keys(categories)) {
 	bot.command(t, ctx => endlessFailing(ctx, categories[t]))
 }
 
-async function endlessFailing(ctx, categoryQNumber) {
+async function endlessFailing(ctx: any, categoryQNumber: string): Promise<void> {
 	/* Reasons can be
 	- Image is SVG, Telegram does not support SVG
 	- Image was not successfully loaded by Telegram fast enough
@@ -58,7 +58,7 @@ async function endlessFailing(ctx, categoryQNumber) {
 	}
 }
 
-async function selectorKeyboard(lang) {
+async function selectorKeyboard(lang: string): Promise<any> {
 	await entities.load(...Object.values(categories))
 	const buttons = Object.values(categories)
 		.map(o => Markup.callbackButton(entities.label(o, lang), `category:${o}`))
@@ -66,7 +66,7 @@ async function selectorKeyboard(lang) {
 	return Markup.inlineKeyboard(buttons, {columns: 3})
 }
 
-bot.action(/category:(Q\d+)/, ctx => {
+(bot as any).action(/category:(Q\d+)/, (ctx: any) => {
 	ctx.answerCbQuery().catch(() => {})
 	ctx.editMessageText('One of the images does not fit…')
 		.catch(() => {})
@@ -76,6 +76,10 @@ bot.action(/category:(Q\d+)/, ctx => {
 bot.command(['start', 'help'], async ctx => {
 	let text = ''
 	text += 'When you chose a category you get 4 images from it. One of them does not fit into the same category as the other 3.'
+
+	if (!ctx.message || !ctx.from) {
+		throw new Error('something is strange')
+	}
 
 	if (ctx.message.text === '/help') {
 		text += '\n\n'
@@ -90,16 +94,16 @@ bot.command(['start', 'help'], async ctx => {
 	return ctx.reply(text, Extra.webPreview(false).markup(
 		await selectorKeyboard(lang)
 	))
-})
+});
 
-bot.action(/^a:.+/, Telegraf.privateChat(async ctx => {
+(bot as any).action(/^a:.+/, (Telegraf as any).privateChat(async (ctx: any) => {
 	const lang = (ctx.from.language_code || 'en').split('-')[0]
 	return ctx.reply('Another one?', Extra.markup(
 		await selectorKeyboard(lang)
 	))
 }))
 
-bot.catch(error => {
+bot.catch((error: any) => {
 	console.error('bot.catch', error)
 })
 

@@ -1,4 +1,4 @@
-module.exports = {
+const categories: {[name: string]: string} = {
 	art: 'Q735',
 	astonomicalBody: 'Q6999',
 	computer: 'Q68',
@@ -14,3 +14,5 @@ module.exports = {
 	vehicle: 'Q42889',
 	weapon: 'Q728'
 }
+
+export default categories

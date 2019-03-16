@@ -13,7 +13,8 @@
 		"node": ">=11"
 	},
 	"scripts": {
-		"start": "node source/index.js",
+		"build": "del dist && tsc",
+		"start": "ts-node source/index.ts",
 		"test": "xo && ava"
 	},
 	"files": [
@@ -46,7 +47,6 @@
 		"babel": false,
 		"compileEnhancements": false,
 		"extensions": [
-			"js",
 			"ts"
 		],
 		"require": [
@@ -57,7 +57,6 @@
 		"semicolon": false,
 		"extends": "xo-typescript",
 		"extensions": [
-			"js",
 			"ts"
 		],
 		"rules": {
@@ -70,7 +69,8 @@
 					"source/riddle.*"
 				],
 				"rules": {
-					"camelcase": "off"
+					"camelcase": "off",
+					"@typescript-eslint/camelcase": "off"
 				}
 			}
 		]

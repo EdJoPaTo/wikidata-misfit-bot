@@ -1,15 +1,13 @@
-const Telegraf = require('telegraf')
+import Telegraf, {ComposerConstructor, Extra, Markup} from 'telegraf'
 
-const entities = require('./entities')
-const {
+import * as entities from './entities'
+import {
 	getTopCategories,
 	getSubCategories,
 	getItems
-} = require('./queries')
+} from './queries'
 
-const {Extra, Markup} = Telegraf
-
-function labeledItem(item, lang) {
+function labeledItem(item: string, lang: string): string {
 	const label = entities.label(item, lang)
 	const description = entities.description(item, lang)
 	const url = `https://www.wikidata.org/wiki/${item}`
@@ -23,12 +21,12 @@ function labeledItem(item, lang) {
 	return text
 }
 
-function getRandomEntries(arr, amount = 1) {
+function getRandomEntries<T>(arr: T[], amount = 1): T[] {
 	if (amount > arr.length) {
 		throw new Error(`amount (${amount}) < arr.length (${arr.length})`)
 	}
 
-	const randomIds = []
+	const randomIds: number[] = []
 	while (randomIds.length < amount) {
 		const rand = Math.floor(Math.random() * arr.length)
 		if (!randomIds.includes(rand)) {
@@ -42,13 +40,13 @@ function getRandomEntries(arr, amount = 1) {
 	return entries
 }
 
-function getLang(ctx) {
-	const lang = ctx.from.language_code
+function getLang(ctx: any): string {
+	const lang: string = ctx.from.language_code
 	return lang.split('-')[0]
 }
 
-async function pickItems(correctQNumber, differentQNumber) {
-	const [allCorrect, allDifferent] = await Promise.all([
+async function pickItems(correctQNumber: string, differentQNumber: string): Promise<{differentItem: string; items: string[]}> {
+	const [allCorrect, allDifferent]: [string[], string[]] = await Promise.all([
 		getItems(correctQNumber),
 		getItems(differentQNumber)
 	])
@@ -67,10 +65,10 @@ async function pickItems(correctQNumber, differentQNumber) {
 	}
 }
 
-async function create(topCategoryKind, lang) {
+async function create(topCategoryKind: string, lang: string): Promise<any> {
 	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]
 	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
-	const {items, differentItem} = await pickItems(...subCategories)
+	const {items, differentItem} = await pickItems(subCategories[0], subCategories[1])
 
 	await entities.load(topCategory, ...subCategories, ...items, differentItem)
 
@@ -102,7 +100,7 @@ async function create(topCategoryKind, lang) {
 	}
 }
 
-async function send(ctx, topCategoryKind) {
+export async function send(ctx: any, topCategoryKind: string): Promise<void> {
 	const lang = getLang(ctx)
 
 	ctx.replyWithChatAction('upload_photo').catch(() => {})
@@ -110,10 +108,10 @@ async function send(ctx, topCategoryKind) {
 	ctx.replyWithChatAction('upload_photo').catch(() => {})
 
 	const msg = await ctx.replyWithMediaGroup(mediaArr)
-	await ctx.reply(text, Extra.markdown().markup(keyboard).webPreview(false).inReplyTo(msg.slice(-1)[0].message_id))
+	await ctx.reply(text, (Extra.markdown().markup(keyboard) as Extra).webPreview(false).inReplyTo(msg.slice(-1)[0].message_id))
 }
 
-function buildEntry(item, lang) {
+function buildEntry(item: string, lang: string): {type: 'photo'; media: string; caption: string; parse_mode: 'Markdown'} {
 	const images = entities.images(item, 800)
 	const caption = labeledItem(item, lang)
 
@@ -127,19 +125,19 @@ function buildEntry(item, lang) {
 	}
 }
 
-const bot = new Telegraf.Composer()
+const bot: ComposerConstructor = new (Telegraf as any).Composer()
 
 bot.action('a-no', ctx => ctx.answerCbQuery('👎'))
 
-bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx, next) => {
+bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: any, next) => {
 	const correctCategory = ctx.match[1]
 	const differentCategory = ctx.match[2]
 	const differentItem = ctx.match[3]
 	const lang = getLang(ctx)
 
-	const originalItems = ctx.callbackQuery.message.entities
-		.filter(o => o.url)
-		.map(o => o.url.split('/').slice(-1)[0])
+	const originalItems: string[] = ctx.callbackQuery.message.entities
+		.filter((o: any) => o.url)
+		.map((o: any) => o.url.split('/').slice(-1)[0])
 
 	await entities.load(correctCategory, differentCategory, ...originalItems)
 
@@ -171,10 +169,9 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx, next) => {
 		ctx.editMessageText(text, Extra.markdown().webPreview(false)),
 		ctx.answerCbQuery('👍')
 	])
-	return next()
+	return next && next()
 })
 
-module.exports = {
-	bot,
-	send
+export function getBot(): ComposerConstructor {
+	return bot
 }

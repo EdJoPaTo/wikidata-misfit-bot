@@ -1,9 +1,13 @@
-const wdk = require('wikidata-sdk')
+/* eslint @typescript-eslint/no-require-imports: warn */
+/* eslint @typescript-eslint/no-var-requires: warn */
+
+import wdk from 'wikidata-sdk'
+
 const got = require('got')
 
 const cacheMap = new Map()
 
-async function getSimplifiedQueryResults(query) {
+async function getSimplifiedQueryResults(query: string): Promise<any> {
 	const url = wdk.sparqlQuery(query)
 	const options = {
 		cache: cacheMap
@@ -19,7 +23,7 @@ async function getSimplifiedQueryResults(query) {
 	}
 }
 
-async function getTopCategories(topCategoryKind) {
+export async function getTopCategories(topCategoryKind: string): Promise<string[]> {
 	const query = `SELECT ?topclass
 	WHERE {
 		SELECT ?topclass ?middleclass WHERE {
@@ -40,7 +44,7 @@ async function getTopCategories(topCategoryKind) {
 	return response.result
 }
 
-async function getSubCategories(topCategory) {
+export async function getSubCategories(topCategory: string): Promise<string[]> {
 	const query = `SELECT ?middleclass
 WHERE {
   ?middleclass wdt:P279 wd:${topCategory}.
@@ -56,7 +60,7 @@ HAVING(COUNT(?item) >= 5)`
 	return response.result
 }
 
-async function getItems(parentItem) {
+export async function getItems(parentItem: string): Promise<string[]> {
 	const query = `SELECT ?item
 WHERE {
 	BIND (wd:${parentItem} as ?class)

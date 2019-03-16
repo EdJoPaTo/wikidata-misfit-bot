@@ -4,9 +4,6 @@
 		"source"
 	],
 	"compilerOptions": {
-		"allowJs": true,
-		"declaration": false,
-
 		"outDir": "dist"
 	}
 }
