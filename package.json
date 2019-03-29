@@ -30,7 +30,8 @@
 	"dependencies": {
 		"got": "^9.6.0",
 		"telegraf": "^3.27.1",
-		"wikidata-sdk": "^5.15.10"
+		"wikidata-sdk": "^6.1.0",
+		"wikidata-sdk-got": "^1.0.0"
 	},
 	"devDependencies": {
 		"@sindresorhus/tsconfig": "^0.2.1",

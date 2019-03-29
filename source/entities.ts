@@ -1,9 +1,5 @@
-/* eslint @typescript-eslint/no-require-imports: warn */
-/* eslint @typescript-eslint/no-var-requires: warn */
-
+import * as wdkGot from 'wikidata-sdk-got'
 import wdk, {EntitySimplified} from 'wikidata-sdk'
-
-const got = require('got')
 
 const cache: {[qNumber: string]: EntitySimplified} = {}
 
@@ -16,18 +12,13 @@ export async function load(...qNumbers: string[]): Promise<void> {
 		return
 	}
 
-	// https://www.wikidata.org/w/api.php?action=help&modules=wbgetentities
-	const url = wdk.getEntities({
+	const entities = await wdkGot.getEntitiesSimplified({
 		ids: needed,
 		props: ['labels', 'descriptions', 'claims']
 	})
 
-	const {body} = await got(url)
-	const {entities} = JSON.parse(body)
-	const simplified = wdk.simplify.entities(entities)
-
-	for (const q of Object.keys(simplified)) {
-		cache[q] = simplified[q]
+	for (const q of Object.keys(entities)) {
+		cache[q] = entities[q]
 	}
 }
 

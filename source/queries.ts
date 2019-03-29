@@ -1,27 +1,6 @@
-/* eslint @typescript-eslint/no-require-imports: warn */
-/* eslint @typescript-eslint/no-var-requires: warn */
-
-import wdk from 'wikidata-sdk'
-
-const got = require('got')
+import * as wdkGot from 'wikidata-sdk-got'
 
 const cacheMap = new Map()
-
-async function getSimplifiedQueryResults(query: string): Promise<any> {
-	const url = wdk.sparqlQuery(query)
-	const options = {
-		cache: cacheMap
-	}
-
-	const {body, retryCount, fromCache, timings} = await got(url, options)
-	const result = wdk.simplify.sparqlResults(body)
-	return {
-		fromCache,
-		result,
-		retryCount,
-		timing: ((timings || {}).phases || {}).total || 0
-	}
-}
 
 export async function getTopCategories(topCategoryKind: string): Promise<string[]> {
 	const query = `SELECT ?topclass
@@ -40,8 +19,8 @@ export async function getTopCategories(topCategoryKind: string): Promise<string[
 	GROUP BY ?topclass
 	HAVING(COUNT(?middleclass) >= 2)`
 
-	const response = await getSimplifiedQueryResults(query)
-	return response.result
+	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache: cacheMap})
+	return results as string[]
 }
 
 export async function getSubCategories(topCategory: string): Promise<string[]> {
@@ -56,8 +35,8 @@ WHERE {
 GROUP BY ?middleclass
 HAVING(COUNT(?item) >= 5)`
 
-	const response = await getSimplifiedQueryResults(query)
-	return response.result
+	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache: cacheMap})
+	return results as string[]
 }
 
 export async function getItems(parentItem: string): Promise<string[]> {
@@ -70,8 +49,8 @@ WHERE {
 	FILTER EXISTS {?item wdt:P18 ?image}.
 }`
 
-	const response = await getSimplifiedQueryResults(query)
-	return response.result
+	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache: cacheMap})
+	return results as string[]
 }
 
 module.exports = {
