@@ -52,9 +52,3 @@ WHERE {
 	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache: cacheMap})
 	return results as string[]
 }
-
-module.exports = {
-	getTopCategories,
-	getSubCategories,
-	getItems
-}
