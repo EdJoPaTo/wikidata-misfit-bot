@@ -22,7 +22,7 @@ function labeledItem(item: string, lang: string): string {
 	return text
 }
 
-function getRandomEntries<T>(arr: T[], amount = 1): T[] {
+function getRandomEntries<T>(arr: readonly T[], amount = 1): T[] {
 	if (amount > arr.length) {
 		throw new Error(`amount (${amount}) < arr.length (${arr.length})`)
 	}
