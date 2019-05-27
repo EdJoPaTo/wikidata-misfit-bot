@@ -2,6 +2,7 @@ import Telegraf, {ComposerConstructor, Extra, Markup} from 'telegraf'
 
 import * as entities from './entities'
 import {
+	commonParents,
 	getTopCategories,
 	getSubCategories,
 	getItems
@@ -75,7 +76,7 @@ async function create(topCategoryKind: string, lang: string): Promise<any> {
 	const mediaArr = items.map(o => buildEntry(o, lang))
 
 	let text = ''
-	text += labeledItem(topCategory, lang)
+	text += labeledItem(subCategories[0], lang)
 
 	text += '\n\n'
 	text += mediaArr
@@ -139,14 +140,18 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: any, next) => {
 		.filter((o: any) => o.url)
 		.map((o: any) => o.url.split('/').slice(-1)[0])
 
-	await entities.load(correctCategory, differentCategory, ...originalItems)
+	const commonCategoryItems = await commonParents(correctCategory, differentCategory)
 
-	const mainCategoryLabel = labeledItem(originalItems[0], lang)
+	await entities.load(correctCategory, differentCategory, ...commonCategoryItems, ...originalItems)
+
+	const commonCategoryLabels = commonCategoryItems
+		.map(o => labeledItem(o, lang))
+
 	const correctCategoryLabel = labeledItem(correctCategory, lang)
 	const differentCategoryLabel = labeledItem(differentCategory, lang)
 
 	let text = ''
-	text += mainCategoryLabel
+	text += commonCategoryLabels.join('\n')
 
 	text += '\n\n'
 	const oldLines = await Promise.all(

@@ -52,3 +52,19 @@ WHERE {
 	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache: cacheMap})
 	return results as string[]
 }
+
+export async function commonParents(...items: string[]): Promise<string[]> {
+	const queryLines: string[] = []
+
+	queryLines.push('SELECT ?parent WHERE {')
+
+	for (const item of items) {
+		queryLines.push(`  wd:${item} wdt:P279 ?parent.`)
+	}
+
+	queryLines.push('}')
+
+	const query = queryLines.join('\n')
+	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache: cacheMap})
+	return results as string[]
+}
