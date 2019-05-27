@@ -29,11 +29,12 @@
 	},
 	"dependencies": {
 		"@sindresorhus/tsconfig": "^0.3.0",
-		"got": "^9.6.0",
 		"telegraf": "^3.27.1",
 		"telegram-typings": "^3.6.1",
 		"ts-node": "^8.0.3",
 		"typescript": "^3.4.1",
+		"wikidata-entity-reader": "^1.0.0",
+		"wikidata-entity-store": "^1.0.0",
 		"wikidata-sdk": "^6.1.0",
 		"wikidata-sdk-got": "^1.0.0"
 	},

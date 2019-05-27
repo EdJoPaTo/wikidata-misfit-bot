@@ -1,6 +1,7 @@
 import Telegraf, {ComposerConstructor, Extra, Markup} from 'telegraf'
+import WikidataEntityReader from 'wikidata-entity-reader'
+import WikidataEntityStore from 'wikidata-entity-store'
 
-import * as entities from './entities'
 import {
 	commonParents,
 	getTopCategories,
@@ -8,13 +9,18 @@ import {
 	getItems
 } from './queries'
 
+let store: WikidataEntityStore
+
+export function init(entityStore: WikidataEntityStore): void {
+	store = entityStore
+}
+
 function labeledItem(item: string, lang: string): string {
-	const label = entities.label(item, lang)
-	const description = entities.description(item, lang)
-	const url = `https://www.wikidata.org/wiki/${item}`
+	const reader = new WikidataEntityReader(store.entity(item), lang)
 
-	let text = `*${label}* [${item}](${url})`
+	let text = `*${reader.label()}* [${reader.qNumber()}](${reader.url()})`
 
+	const description = reader.description()
 	if (description) {
 		text += `\n  ${description}`
 	}
@@ -71,7 +77,7 @@ async function create(topCategoryKind: string, lang: string): Promise<any> {
 	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
 	const {items, differentItem} = await pickItems(subCategories[0], subCategories[1])
 
-	await entities.load(topCategory, ...subCategories, ...items, differentItem)
+	await store.preloadQNumbers(topCategory, ...subCategories, ...items, differentItem)
 
 	const mediaArr = items.map(o => buildEntry(o, lang))
 
@@ -113,7 +119,8 @@ export async function send(ctx: any, topCategoryKind: string): Promise<void> {
 }
 
 function buildEntry(item: string, lang: string): {type: 'photo'; media: string; caption: string; parse_mode: 'Markdown'} {
-	const images = entities.images(item, 800)
+	const reader = new WikidataEntityReader(store.entity(item), lang)
+	const images = reader.images(800)
 	const caption = labeledItem(item, lang)
 
 	const imageUrl = getRandomEntries(images)[0]
@@ -142,7 +149,7 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: any, next) => {
 
 	const commonCategoryItems = await commonParents(correctCategory, differentCategory)
 
-	await entities.load(correctCategory, differentCategory, ...commonCategoryItems, ...originalItems)
+	await store.preloadQNumbers(correctCategory, differentCategory, ...commonCategoryItems, ...originalItems)
 
 	const commonCategoryLabels = commonCategoryItems
 		.map(o => labeledItem(o, lang))

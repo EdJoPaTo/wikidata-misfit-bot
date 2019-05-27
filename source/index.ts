@@ -2,11 +2,18 @@ import {readFileSync} from 'fs'
 
 import {InlineKeyboardMarkup} from 'telegram-typings'
 import Telegraf, {Extra, Markup} from 'telegraf'
+import WikidataEntityReader from 'wikidata-entity-reader'
+import WikidataEntityStore from 'wikidata-entity-store'
 
 import categories from './categories'
-import * as entities from './entities'
 import * as riddle from './riddle'
 import {getTopCategories} from './queries'
+
+const store = new WikidataEntityStore({
+	properties: ['labels', 'descriptions', 'claims']
+})
+
+riddle.init(store)
 
 const tokenFilePath = process.env.NODE_ENV === 'production' ? process.env.npm_package_config_tokenpath as string : 'token.txt'
 const token = readFileSync(tokenFilePath, 'utf8').trim()
@@ -60,9 +67,9 @@ async function endlessFailing(ctx: any, categoryQNumber: string): Promise<void> 
 }
 
 async function selectorKeyboard(lang: string): Promise<InlineKeyboardMarkup> {
-	await entities.load(...Object.values(categories))
+	await store.preloadQNumbers(...Object.values(categories))
 	const buttons = Object.values(categories)
-		.map(o => Markup.callbackButton(entities.label(o, lang), `category:${o}`))
+		.map(o => Markup.callbackButton(new WikidataEntityReader(store.entity(o), lang).label(), `category:${o}`))
 		.sort((a, b) => a.text.localeCompare(b.text, lang))
 	return Markup.inlineKeyboard(buttons, {columns: 3})
 }
