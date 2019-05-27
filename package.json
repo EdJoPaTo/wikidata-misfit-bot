@@ -43,7 +43,7 @@
 		"@typescript-eslint/eslint-plugin": "^1.5.0",
 		"ava": "^1.4.1",
 		"del-cli": "^1.1.0",
-		"eslint-config-xo-typescript": "^0.9.0",
+		"eslint-config-xo-typescript": "^0.12.0",
 		"xo": "^0.24.0"
 	},
 	"ava": {
@@ -63,7 +63,11 @@
 			"ts"
 		],
 		"rules": {
-			"@typescript-eslint/promise-function-async": "off",
+			"@typescript-eslint/promise-function-async": "warn",
+			"@typescript-eslint/semi": [
+				"error",
+				"never"
+			],
 			"ava/no-ignored-test-files": "off"
 		},
 		"overrides": [

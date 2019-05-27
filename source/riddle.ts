@@ -135,7 +135,7 @@ function buildEntry(item: string, lang: string): {type: 'photo'; media: string; 
 
 const bot: ComposerConstructor = new (Telegraf as any).Composer()
 
-bot.action('a-no', ctx => ctx.answerCbQuery('👎'))
+bot.action('a-no', async ctx => ctx.answerCbQuery('👎'))
 
 bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: any, next) => {
 	const correctCategory = ctx.match[1]

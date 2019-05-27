@@ -39,7 +39,7 @@ bot.use(riddle.getBot() as any)
 
 Promise.all(
 	Object.values(categories)
-		.map(o => getTopCategories(o)
+		.map(async o => getTopCategories(o)
 			.catch(() => {})
 		)
 ).then(() => {
@@ -47,7 +47,7 @@ Promise.all(
 })
 
 for (const t of Object.keys(categories)) {
-	bot.command(t, ctx => endlessFailing(ctx, categories[t]))
+	bot.command(t, async ctx => endlessFailing(ctx, categories[t]))
 }
 
 async function endlessFailing(ctx: any, categoryQNumber: string): Promise<void> {
@@ -74,7 +74,7 @@ async function selectorKeyboard(lang: string): Promise<InlineKeyboardMarkup> {
 	return Markup.inlineKeyboard(buttons, {columns: 3})
 }
 
-(bot as any).action(/category:(Q\d+)/, (ctx: any) => {
+(bot as any).action(/category:(Q\d+)/, async (ctx: any) => {
 	ctx.answerCbQuery().catch(() => {})
 	ctx.editMessageText('One of the images does not fit…')
 		.catch(() => {})
