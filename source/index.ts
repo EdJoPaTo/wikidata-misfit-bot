@@ -1,5 +1,6 @@
 import {readFileSync} from 'fs'
 
+import {InlineKeyboardMarkup} from 'telegram-typings'
 import Telegraf, {Extra, Markup} from 'telegraf'
 
 import categories from './categories'
@@ -58,7 +59,7 @@ async function endlessFailing(ctx: any, categoryQNumber: string): Promise<void> 
 	}
 }
 
-async function selectorKeyboard(lang: string): Promise<any> {
+async function selectorKeyboard(lang: string): Promise<InlineKeyboardMarkup> {
 	await entities.load(...Object.values(categories))
 	const buttons = Object.values(categories)
 		.map(o => Markup.callbackButton(entities.label(o, lang), `category:${o}`))
