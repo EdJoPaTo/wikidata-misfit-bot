@@ -1,7 +1,7 @@
 import {readFileSync} from 'fs'
 
 import {InlineKeyboardMarkup} from 'telegram-typings'
-import Telegraf, {Extra, Markup} from 'telegraf'
+import Telegraf, {ContextMessageUpdate, Extra, Markup} from 'telegraf'
 import WikidataEntityReader from 'wikidata-entity-reader'
 import WikidataEntityStore from 'wikidata-entity-store'
 
@@ -104,11 +104,15 @@ bot.command(['start', 'help'], async ctx => {
 	))
 });
 
-(bot as any).action(/^a:.+/, (Telegraf as any).privateChat(async (ctx: any) => {
+(bot as any).action(/^a:.+/, (Telegraf as any).privateChat(async (ctx: ContextMessageUpdate) => {
+	if (!ctx.from) {
+		throw new Error('something is strange')
+	}
+
 	const lang = (ctx.from.language_code || 'en').split('-')[0]
 	return ctx.reply('Another one?', Extra.markup(
 		await selectorKeyboard(lang)
-	))
+	) as any)
 }))
 
 bot.catch((error: any) => {

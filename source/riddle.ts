@@ -1,4 +1,4 @@
-import Telegraf, {ComposerConstructor, Extra, Markup} from 'telegraf'
+import Telegraf, {ComposerConstructor, ContextMessageUpdate, Extra, Markup} from 'telegraf'
 import WikidataEntityReader from 'wikidata-entity-reader'
 import WikidataEntityStore from 'wikidata-entity-store'
 
@@ -47,8 +47,12 @@ function getRandomEntries<T>(arr: readonly T[], amount = 1): T[] {
 	return entries
 }
 
-function getLang(ctx: any): string {
-	const lang: string = ctx.from.language_code
+function getLang(ctx: ContextMessageUpdate): string {
+	if (!ctx.from) {
+		throw new Error('thats a strange context')
+	}
+
+	const lang: string = ctx.from.language_code || 'en'
 	return lang.split('-')[0]
 }
 
@@ -107,15 +111,15 @@ async function create(topCategoryKind: string, lang: string): Promise<any> {
 	}
 }
 
-export async function send(ctx: any, topCategoryKind: string): Promise<void> {
+export async function send(ctx: ContextMessageUpdate, topCategoryKind: string): Promise<void> {
 	const lang = getLang(ctx)
 
 	ctx.replyWithChatAction('upload_photo').catch(() => {})
 	const {mediaArr, text, keyboard} = await create(topCategoryKind, lang)
 	ctx.replyWithChatAction('upload_photo').catch(() => {})
 
-	const msg = await ctx.replyWithMediaGroup(mediaArr)
-	await ctx.reply(text, (Extra.markdown().markup(keyboard) as Extra).webPreview(false).inReplyTo(msg.slice(-1)[0].message_id))
+	const msg = await (ctx as any).replyWithMediaGroup(mediaArr)
+	await ctx.reply(text, (Extra.markdown().markup(keyboard) as Extra).webPreview(false).inReplyTo(msg.slice(-1)[0].message_id) as any)
 }
 
 function buildEntry(item: string, lang: string): {type: 'photo'; media: string; caption: string; parse_mode: 'Markdown'} {
@@ -137,15 +141,21 @@ const bot: ComposerConstructor = new (Telegraf as any).Composer()
 
 bot.action('a-no', async ctx => ctx.answerCbQuery('👎'))
 
-bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: any, next) => {
-	const correctCategory = ctx.match[1]
-	const differentCategory = ctx.match[2]
-	const differentItem = ctx.match[3]
+bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: ContextMessageUpdate, next) => {
+	if (!(ctx as any).match || !ctx.callbackQuery || !ctx.callbackQuery.message || !ctx.callbackQuery.message.entities) {
+		throw new Error('something is wrong with the callback_data')
+	}
+
+	const match = (ctx as any).match as RegExpExecArray
+	const correctCategory = match[1]
+	const differentCategory = match[2]
+	const differentItem = match[3]
 	const lang = getLang(ctx)
 
 	const originalItems: string[] = ctx.callbackQuery.message.entities
-		.filter((o: any) => o.url)
-		.map((o: any) => o.url.split('/').slice(-1)[0])
+		.filter(o => o.url)
+		.map(o => o.url as string)
+		.map(o => o.split('/').slice(-1)[0])
 
 	const commonCategoryItems = await commonParents(correctCategory, differentCategory)
 
@@ -178,7 +188,7 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: any, next) => {
 	text += `🚫1x ${differentCategoryLabel}`
 
 	await Promise.all([
-		ctx.editMessageText(text, Extra.markdown().webPreview(false)),
+		ctx.editMessageText(text, Extra.markdown().webPreview(false) as any),
 		ctx.answerCbQuery('👍')
 	])
 	return next && next()
