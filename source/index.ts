@@ -1,4 +1,4 @@
-import {readFileSync} from 'fs'
+import {readFileSync, existsSync} from 'fs'
 
 import {InlineKeyboardMarkup} from 'telegram-typings'
 import Telegraf, {ContextMessageUpdate, Extra, Markup} from 'telegraf'
@@ -15,7 +15,7 @@ const store = new WikidataEntityStore({
 
 riddle.init(store)
 
-const tokenFilePath = process.env.NODE_ENV === 'production' ? process.env.npm_package_config_tokenpath as string : 'token.txt'
+const tokenFilePath = existsSync('/run/secrets') ? '/run/secrets/bot-token.txt' : 'bot-token.txt'
 const token = readFileSync(tokenFilePath, 'utf8').trim()
 const bot = new Telegraf(token)
 
