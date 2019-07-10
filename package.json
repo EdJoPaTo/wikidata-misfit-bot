@@ -25,23 +25,24 @@
 		"wikidataulm"
 	],
 	"dependencies": {
-		"@sindresorhus/tsconfig": "^0.4.0",
+		"source-map-support": "^0.5.12",
 		"telegraf": "^3.27.1",
-		"telegram-typings": "^3.6.1",
-		"ts-node": "^8.0.3",
-		"typescript": "^3.4.1",
 		"wikidata-entity-reader": "^1.0.0",
 		"wikidata-entity-store": "^1.0.0",
 		"wikidata-sdk": "^6.1.0",
 		"wikidata-sdk-got": "^1.0.0"
 	},
 	"devDependencies": {
+		"@sindresorhus/tsconfig": "^0.4.0",
 		"@types/node": "^12.0.2",
 		"@typescript-eslint/eslint-plugin": "^1.11.0",
 		"@typescript-eslint/parser": "^1.11.0",
 		"ava": "^2.0.0",
 		"del-cli": "^2.0.0",
 		"eslint-config-xo-typescript": "^0.15.0",
+		"telegram-typings": "^3.6.1",
+		"ts-node": "^8.0.3",
+		"typescript": "^3.4.1",
 		"xo": "^0.24.0"
 	},
 	"ava": {
