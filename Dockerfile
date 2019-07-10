@@ -1,4 +1,4 @@
-FROM node:12-stretch
+FROM node:12-alpine
 WORKDIR /build
 
 COPY package.json package-lock.json ./
