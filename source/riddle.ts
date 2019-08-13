@@ -1,4 +1,4 @@
-import Telegraf, {ComposerConstructor, ContextMessageUpdate, Extra, Markup} from 'telegraf'
+import {Composer, ContextMessageUpdate, Extra, Markup} from 'telegraf'
 import WikidataEntityReader from 'wikidata-entity-reader'
 import WikidataEntityStore from 'wikidata-entity-store'
 
@@ -137,7 +137,7 @@ function buildEntry(item: string, lang: string): {type: 'photo'; media: string; 
 	}
 }
 
-const bot: ComposerConstructor = new (Telegraf as any).Composer()
+const bot = new Composer()
 
 bot.action('a-no', async ctx => ctx.answerCbQuery('👎'))
 
@@ -194,6 +194,6 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: ContextMessageUpdate, next) => 
 	return next && next()
 })
 
-export function getBot(): ComposerConstructor {
+export function getBot(): Composer<ContextMessageUpdate> {
 	return bot
 }
