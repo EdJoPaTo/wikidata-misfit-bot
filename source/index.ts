@@ -74,7 +74,7 @@ async function selectorKeyboard(lang: string): Promise<InlineKeyboardMarkup> {
 	return Markup.inlineKeyboard(buttons, {columns: 3})
 }
 
-(bot as any).action(/category:(Q\d+)/, async (ctx: any) => {
+bot.action(/category:(Q\d+)/, async (ctx: any) => {
 	ctx.answerCbQuery().catch(() => {})
 	ctx.editMessageText('One of the images does not fit…')
 		.catch(() => {})
@@ -104,7 +104,7 @@ bot.command(['start', 'help'], async ctx => {
 	))
 });
 
-(bot as any).action(/^a:.+/, (Telegraf as any).privateChat(async (ctx: ContextMessageUpdate) => {
+bot.action(/^a:.+/, (Telegraf as any).privateChat(async (ctx: ContextMessageUpdate) => {
 	if (!ctx.from) {
 		throw new Error('something is strange')
 	}

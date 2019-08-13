@@ -142,11 +142,11 @@ const bot = new Composer()
 bot.action('a-no', async ctx => ctx.answerCbQuery('👎'))
 
 bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: ContextMessageUpdate, next) => {
-	if (!(ctx as any).match || !ctx.callbackQuery || !ctx.callbackQuery.message || !ctx.callbackQuery.message.entities) {
+	if (!ctx.match || !ctx.callbackQuery || !ctx.callbackQuery.message || !ctx.callbackQuery.message.entities) {
 		throw new Error('something is wrong with the callback_data')
 	}
 
-	const match = (ctx as any).match as RegExpExecArray
+	const match = ctx.match
 	const correctCategory = match[1]
 	const differentCategory = match[2]
 	const differentItem = match[3]
