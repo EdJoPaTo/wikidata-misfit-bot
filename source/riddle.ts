@@ -9,6 +9,13 @@ import {
 	getItems
 } from './queries'
 
+type MessageMedia = {
+	type: 'photo';
+	media: string;
+	caption: string;
+	parse_mode: 'Markdown'
+}
+
 let store: WikidataEntityStore
 
 export function init(entityStore: WikidataEntityStore): void {
@@ -76,7 +83,7 @@ async function pickItems(correctQNumber: string, differentQNumber: string): Prom
 	}
 }
 
-async function create(topCategoryKind: string, lang: string): Promise<any> {
+async function create(topCategoryKind: string, lang: string): Promise<{keyboard: any; mediaArr: MessageMedia[]; text: string}> {
 	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]
 	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
 	const {items, differentItem} = await pickItems(subCategories[0], subCategories[1])
@@ -122,7 +129,7 @@ export async function send(ctx: ContextMessageUpdate, topCategoryKind: string): 
 	await ctx.reply(text, (Extra.markdown().markup(keyboard) as Extra).webPreview(false).inReplyTo(msg.slice(-1)[0].message_id) as any)
 }
 
-function buildEntry(item: string, lang: string): {type: 'photo'; media: string; caption: string; parse_mode: 'Markdown'} {
+function buildEntry(item: string, lang: string): MessageMedia {
 	const reader = new WikidataEntityReader(store.entity(item), lang)
 	const images = reader.images(800)
 	const caption = labeledItem(item, lang)
