@@ -13,7 +13,7 @@ type MessageMedia = {
 	type: 'photo';
 	media: string;
 	caption: string;
-	parse_mode: 'Markdown'
+	parse_mode: 'Markdown';
 }
 
 let store: WikidataEntityStore
@@ -153,10 +153,9 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: ContextMessageUpdate, next) => 
 		throw new Error('something is wrong with the callback_data')
 	}
 
-	const match = ctx.match
-	const correctCategory = match[1]
-	const differentCategory = match[2]
-	const differentItem = match[3]
+	const correctCategory = ctx.match[1]
+	const differentCategory = ctx.match[2]
+	const differentItem = ctx.match[3]
 	const lang = getLang(ctx)
 
 	const originalItems: string[] = ctx.callbackQuery.message.entities
@@ -181,7 +180,7 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: ContextMessageUpdate, next) => 
 	const oldLines = await Promise.all(
 		originalItems
 			.slice(1)
-			.map(async o => {
+			.map(o => {
 				const emoji = o === differentItem ? '🚫' : '✅'
 				return `${emoji} ${labeledItem(o, lang)}`
 			})

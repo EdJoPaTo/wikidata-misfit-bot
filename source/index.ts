@@ -74,11 +74,11 @@ async function selectorKeyboard(lang: string): Promise<InlineKeyboardMarkup> {
 	return Markup.inlineKeyboard(buttons, {columns: 3})
 }
 
-bot.action(/category:(Q\d+)/, async (ctx: any) => {
+bot.action(/category:(Q\d+)/, async ctx => {
 	ctx.answerCbQuery().catch(() => {})
 	ctx.editMessageText('One of the images does not fit…')
 		.catch(() => {})
-	return endlessFailing(ctx, ctx.match[1])
+	return endlessFailing(ctx, ctx.match![1])
 })
 
 bot.command(['start', 'help'], async ctx => {
@@ -102,7 +102,7 @@ bot.command(['start', 'help'], async ctx => {
 	return ctx.reply(text, Extra.webPreview(false).markup(
 		await selectorKeyboard(lang)
 	))
-});
+})
 
 bot.action(/^a:.+/, (Telegraf as any).privateChat(async (ctx: ContextMessageUpdate) => {
 	if (!ctx.from) {
