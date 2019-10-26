@@ -125,7 +125,7 @@ export async function send(ctx: ContextMessageUpdate, topCategoryKind: string): 
 	const {mediaArr, text, keyboard} = await create(topCategoryKind, lang)
 	ctx.replyWithChatAction('upload_photo').catch(() => {})
 
-	const msg = await (ctx as any).replyWithMediaGroup(mediaArr)
+	const msg = await ctx.replyWithMediaGroup(mediaArr)
 	await ctx.reply(text, (Extra.markdown().markup(keyboard) as Extra).webPreview(false).inReplyTo(msg.slice(-1)[0].message_id) as any)
 }
 

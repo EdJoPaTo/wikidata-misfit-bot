@@ -35,7 +35,7 @@ bot.use(async (ctx, next) => {
 	}
 })
 
-bot.use(riddle.getBot() as any)
+bot.use(riddle.getBot().middleware())
 
 Promise.all(
 	Object.values(categories)
@@ -104,7 +104,7 @@ bot.command(['start', 'help'], async ctx => {
 	))
 })
 
-bot.action(/^a:.+/, (Telegraf as any).privateChat(async (ctx: ContextMessageUpdate) => {
+bot.action(/^a:.+/, Telegraf.privateChat(async (ctx: ContextMessageUpdate) => {
 	if (!ctx.from) {
 		throw new Error('something is strange')
 	}
