@@ -37,15 +37,6 @@ bot.use(async (ctx, next) => {
 
 bot.use(riddle.getBot().middleware())
 
-Promise.all(
-	Object.values(categories)
-		.map(async o => getTopCategories(o)
-			.catch(() => {})
-		)
-).then(() => {
-	console.log('cache filled')
-})
-
 for (const t of Object.keys(categories)) {
 	bot.command(t, async ctx => endlessFailing(ctx, categories[t]))
 }
@@ -119,4 +110,14 @@ bot.catch((error: any) => {
 	console.error('bot.catch', error)
 })
 
-bot.startPolling()
+async function startup(): Promise<void> {
+	await Promise.all(Object.values(categories)
+		.map(async o => getTopCategories(o)
+			.catch(() => {})
+		))
+	console.log(new Date(), 'cache filled')
+	bot.startPolling()
+	console.log(new Date(), 'Bot started')
+}
+
+startup()
