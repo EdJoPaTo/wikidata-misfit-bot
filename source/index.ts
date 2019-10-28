@@ -113,13 +113,27 @@ bot.catch((error: any) => {
 })
 
 async function startup(): Promise<void> {
-	await Promise.all(Object.values(categories)
-		.map(async o => getTopCategories(o)
-			.catch(() => {})
-		))
+	await Promise.all(
+		Object.keys(categories)
+			.map(async o => preloadCategory(o))
+	)
+
 	console.log(new Date(), 'cache filled')
 	await bot.launch()
 	console.log(new Date(), 'Bot started as', bot.options.username)
+}
+
+async function preloadCategory(category: string): Promise<void> {
+	const identifier = `preloadCategory ${category}`
+	console.time(identifier)
+	const qNumber = categories[category]
+	try {
+		await getTopCategories(qNumber)
+	} catch (error) {
+		console.log(identifier, 'failed', qNumber, error.message)
+	}
+
+	console.timeEnd(identifier)
 }
 
 startup()
