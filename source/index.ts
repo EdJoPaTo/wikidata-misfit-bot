@@ -33,10 +33,10 @@ bot.use(async (ctx, next) => {
 bot.use(riddle.getBot().middleware())
 
 for (const t of Object.keys(categories)) {
-	bot.command(t, async ctx => endlessFailing(ctx, categories[t]))
+	bot.command(t, async ctx => endlessFailing(ctx, categories[t], 0))
 }
 
-async function endlessFailing(ctx: any, categoryQNumber: string): Promise<void> {
+async function endlessFailing(ctx: any, categoryQNumber: string, attempt: number): Promise<void> {
 	/* Reasons can be
 	- Image is SVG, Telegram does not support SVG
 	- Image was not successfully loaded by Telegram fast enough
@@ -47,8 +47,15 @@ async function endlessFailing(ctx: any, categoryQNumber: string): Promise<void> 
 		await riddle.send(ctx, categoryQNumber)
 		return
 	} catch (error) {
-		console.log('endlessFailing', error.message)
-		await endlessFailing(ctx, categoryQNumber)
+		if (attempt < 2) {
+			console.error('endlessFailing', attempt, error.message)
+		} else {
+			console.error('endlessFailing', attempt, error)
+		}
+
+		if (attempt < 5) {
+			await endlessFailing(ctx, categoryQNumber, attempt + 1)
+		}
 	}
 }
 
@@ -64,7 +71,7 @@ bot.action(/category:(Q\d+)/, async ctx => {
 	ctx.answerCbQuery().catch(() => {})
 	ctx.editMessageText('One of the images does not fit…')
 		.catch(() => {})
-	return endlessFailing(ctx, ctx.match![1])
+	return endlessFailing(ctx, ctx.match![1], 0)
 })
 
 bot.command(['start', 'help'], async ctx => {
