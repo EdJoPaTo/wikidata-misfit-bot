@@ -15,7 +15,7 @@
 	"scripts": {
 		"build": "del dist && tsc",
 		"start": "ts-node source/index.ts",
-		"test": "xo && ava"
+		"test": "tsc && xo && ava"
 	},
 	"files": [
 		"dist"
@@ -44,16 +44,6 @@
 		"ts-node": "^8.0.3",
 		"typescript": "^3.4.1",
 		"xo": "^0.25.3"
-	},
-	"ava": {
-		"babel": false,
-		"compileEnhancements": false,
-		"extensions": [
-			"ts"
-		],
-		"require": [
-			"ts-node/register"
-		]
 	},
 	"xo": {
 		"semicolon": false,
