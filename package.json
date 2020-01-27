@@ -7,7 +7,7 @@
 	"author": {
 		"name": "Edgar Toll",
 		"email": "edjopato@gmail.com",
-		"url": "edjopato.de"
+		"url": "https://edjopato.de"
 	},
 	"engines": {
 		"node": ">=12"
