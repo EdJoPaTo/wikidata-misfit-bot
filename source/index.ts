@@ -119,6 +119,12 @@ async function startup(): Promise<void> {
 	)
 
 	console.log(new Date(), 'cache filled')
+
+	await bot.telegram.setMyCommands([
+		{command: 'start', description: 'show the category selector'},
+		{command: 'help', description: 'show help'}
+	])
+
 	await bot.launch()
 	console.log(new Date(), 'Bot started as', bot.options.username)
 }
