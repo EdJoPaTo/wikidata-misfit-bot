@@ -1,4 +1,4 @@
-import {Composer, ContextMessageUpdate, Extra, Markup} from 'telegraf'
+import {Composer, Context as TelegrafContext, Extra, Markup} from 'telegraf'
 import WikidataEntityReader from 'wikidata-entity-reader'
 import WikidataEntityStore from 'wikidata-entity-store'
 
@@ -35,26 +35,26 @@ function labeledItem(item: string, lang: string): string {
 	return text
 }
 
-function getRandomEntries<T>(arr: readonly T[], amount = 1): T[] {
-	if (amount > arr.length) {
-		throw new Error(`amount (${amount}) < arr.length (${arr.length})`)
+function getRandomEntries<T>(array: readonly T[], amount = 1): T[] {
+	if (amount > array.length) {
+		throw new Error(`amount (${amount}) < arr.length (${array.length})`)
 	}
 
 	const randomIds: number[] = []
 	while (randomIds.length < amount) {
-		const rand = Math.floor(Math.random() * arr.length)
+		const rand = Math.floor(Math.random() * array.length)
 		if (!randomIds.includes(rand)) {
 			randomIds.push(rand)
 		}
 	}
 
 	const entries = randomIds
-		.map(i => arr[i])
+		.map(i => array[i])
 
 	return entries
 }
 
-function getLang(ctx: ContextMessageUpdate): string {
+function getLang(ctx: TelegrafContext): string {
 	if (!ctx.from) {
 		throw new Error('thats a strange context')
 	}
@@ -83,20 +83,20 @@ async function pickItems(correctQNumber: string, differentQNumber: string): Prom
 	}
 }
 
-async function create(topCategoryKind: string, lang: string): Promise<{keyboard: any; mediaArr: MessageMedia[]; text: string}> {
+async function create(topCategoryKind: string, lang: string): Promise<{keyboard: any; mediaArray: MessageMedia[]; text: string}> {
 	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]
 	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
 	const {items, differentItem} = await pickItems(subCategories[0], subCategories[1])
 
 	await store.preloadQNumbers(topCategory, ...subCategories, ...items, differentItem)
 
-	const mediaArr = items.map(o => buildEntry(o, lang))
+	const mediaArray = items.map(o => buildEntry(o, lang))
 
 	let text = ''
 	text += labeledItem(subCategories[0], lang)
 
 	text += '\n\n'
-	text += mediaArr
+	text += mediaArray
 		.map(o => o.caption)
 		.join('\n')
 
@@ -113,20 +113,20 @@ async function create(topCategoryKind: string, lang: string): Promise<{keyboard:
 
 	return {
 		keyboard,
-		mediaArr,
+		mediaArray,
 		text
 	}
 }
 
-export async function send(ctx: ContextMessageUpdate, topCategoryKind: string): Promise<void> {
+export async function send(ctx: TelegrafContext, topCategoryKind: string): Promise<void> {
 	const lang = getLang(ctx)
 
 	ctx.replyWithChatAction('upload_photo').catch(() => {})
-	const {mediaArr, text, keyboard} = await create(topCategoryKind, lang)
+	const {mediaArray, text, keyboard} = await create(topCategoryKind, lang)
 	ctx.replyWithChatAction('upload_photo').catch(() => {})
 
-	const msg = await ctx.replyWithMediaGroup(mediaArr)
-	await ctx.reply(text, (Extra.markdown().markup(keyboard) as Extra).webPreview(false).inReplyTo(msg.slice(-1)[0].message_id) as any)
+	const message = await ctx.replyWithMediaGroup(mediaArray)
+	await ctx.reply(text, (Extra.markdown().markup(keyboard) as Extra).webPreview(false).inReplyTo(message.slice(-1)[0].message_id) as any)
 }
 
 function buildEntry(item: string, lang: string): MessageMedia {
@@ -144,11 +144,11 @@ function buildEntry(item: string, lang: string): MessageMedia {
 	}
 }
 
-const bot = new Composer()
+export const bot = new Composer()
 
 bot.action('a-no', async ctx => ctx.answerCbQuery('👎'))
 
-bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: ContextMessageUpdate, next) => {
+bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: TelegrafContext, next) => {
 	if (!ctx.match || !ctx.callbackQuery || !ctx.callbackQuery.message || !ctx.callbackQuery.message.entities) {
 		throw new Error('something is wrong with the callback_data')
 	}
@@ -199,7 +199,3 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: ContextMessageUpdate, next) => 
 	])
 	return next && next()
 })
-
-export function getBot(): Composer<ContextMessageUpdate> {
-	return bot
-}

@@ -1,7 +1,7 @@
 import {readFileSync, existsSync} from 'fs'
 
 import {InlineKeyboardMarkup} from 'telegram-typings'
-import Telegraf, {ContextMessageUpdate, Extra, Markup} from 'telegraf'
+import Telegraf, {Context as TelegrafContext, Extra, Markup} from 'telegraf'
 import WikidataEntityReader from 'wikidata-entity-reader'
 import WikidataEntityStore from 'wikidata-entity-store'
 
@@ -30,7 +30,7 @@ bot.use(async (ctx, next) => {
 	}
 })
 
-bot.use(riddle.getBot().middleware())
+bot.use(riddle.bot.middleware())
 
 for (const t of Object.keys(categories)) {
 	bot.command(t, async ctx => endlessFailing(ctx, categories[t], 0))
@@ -97,7 +97,7 @@ bot.command(['start', 'help'], async ctx => {
 	))
 })
 
-bot.action(/^a:.+/, Telegraf.privateChat(async (ctx: ContextMessageUpdate) => {
+bot.action(/^a:.+/, Telegraf.privateChat(async (ctx: TelegrafContext) => {
 	if (!ctx.from) {
 		throw new Error('something is strange')
 	}
@@ -136,4 +136,5 @@ async function preloadCategory(category: string): Promise<void> {
 	console.timeEnd(identifier)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 startup()
