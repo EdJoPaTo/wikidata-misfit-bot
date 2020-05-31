@@ -1,7 +1,7 @@
 import {readFileSync, existsSync} from 'fs'
 
-import {InlineKeyboardMarkup} from 'telegram-typings'
-import Telegraf, {Context as TelegrafContext, Extra, Markup} from 'telegraf'
+import {InlineKeyboardButton} from 'telegraf/typings/markup'
+import {Telegraf, Context as TelegrafContext, Extra, Markup} from 'telegraf'
 import WikidataEntityReader from 'wikidata-entity-reader'
 import WikidataEntityStore from 'wikidata-entity-store'
 
@@ -59,12 +59,12 @@ async function endlessFailing(ctx: any, categoryQNumber: string, attempt: number
 	}
 }
 
-async function selectorKeyboard(lang: string): Promise<InlineKeyboardMarkup> {
+async function selectorKeyboard(lang: string): Promise<InlineKeyboardButton[]> {
 	await store.preloadQNumbers(...Object.values(categories))
 	const buttons = Object.values(categories)
 		.map(o => Markup.callbackButton(new WikidataEntityReader(store.entity(o), lang).label(), `category:${o}`))
 		.sort((a, b) => a.text.localeCompare(b.text, lang))
-	return Markup.inlineKeyboard(buttons, {columns: 3})
+	return buttons
 }
 
 bot.action(/category:(Q\d+)/, async ctx => {
@@ -93,7 +93,7 @@ bot.command(['start', 'help'], async ctx => {
 
 	const lang = (ctx.from.language_code || 'en').split('-')[0]
 	return ctx.reply(text, Extra.webPreview(false).markup(
-		await selectorKeyboard(lang)
+		Markup.inlineKeyboard(await selectorKeyboard(lang), {columns: 3})
 	))
 })
 
@@ -104,7 +104,7 @@ bot.action(/^a:.+/, Telegraf.privateChat(async (ctx: TelegrafContext) => {
 
 	const lang = (ctx.from.language_code || 'en').split('-')[0]
 	return ctx.reply('Another one?', Extra.markup(
-		await selectorKeyboard(lang)
+		Markup.inlineKeyboard(await selectorKeyboard(lang), {columns: 3})
 	) as any)
 }))
 
