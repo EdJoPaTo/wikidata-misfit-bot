@@ -1,23 +1,19 @@
 import {readFileSync, existsSync} from 'fs'
 
 import {InlineKeyboardButton} from 'telegraf/typings/markup'
-import {Telegraf, Context as TelegrafContext, Extra, Markup} from 'telegraf'
-import WikidataEntityReader from 'wikidata-entity-reader'
-import WikidataEntityStore from 'wikidata-entity-store'
+import {Telegraf, Extra, Markup} from 'telegraf'
+import {TelegrafWikibase} from 'telegraf-wikibase'
 
-import categories from './categories'
-import * as riddle from './riddle'
+import {Context} from './context'
 import {getTopCategories} from './queries'
+import * as riddle from './riddle'
+import categories from './categories'
 
-const store = new WikidataEntityStore({
-	properties: ['labels', 'descriptions', 'claims']
-})
-
-riddle.init(store)
+const twb = new TelegrafWikibase()
 
 const tokenFilePath = existsSync('/run/secrets') ? '/run/secrets/bot-token.txt' : 'bot-token.txt'
 const token = readFileSync(tokenFilePath, 'utf8').trim()
-const bot = new Telegraf(token)
+const bot = new Telegraf<Context>(token)
 
 bot.use(async (ctx, next) => {
 	try {
@@ -29,6 +25,8 @@ bot.use(async (ctx, next) => {
 		await ctx.reply('😣 This happens… Please try again.')
 	}
 })
+
+bot.use(twb.middleware())
 
 bot.use(riddle.bot.middleware())
 
@@ -59,12 +57,19 @@ async function endlessFailing(ctx: any, categoryQNumber: string, attempt: number
 	}
 }
 
-async function selectorKeyboard(lang: string): Promise<InlineKeyboardButton[]> {
-	await store.preloadQNumbers(...Object.values(categories))
-	const buttons = Object.values(categories)
-		.map(o => Markup.callbackButton(new WikidataEntityReader(store.entity(o), lang).label(), `category:${o}`))
-		.sort((a, b) => a.text.localeCompare(b.text, lang))
-	return buttons
+async function selectorButton(context: Context, categoryEntityId: string): Promise<InlineKeyboardButton> {
+	const reader = await context.wb.reader(categoryEntityId)
+	return Markup.callbackButton(reader.label(), `category:${categoryEntityId}`)
+}
+
+async function selectorKeyboard(context: Context): Promise<InlineKeyboardButton[]> {
+	await context.wb.preload(Object.values(categories))
+	const buttons = await Promise.all(Object.values(categories)
+		.map(async o => selectorButton(context, o))
+	)
+	const sorted = buttons
+		.sort((a, b) => a.text.localeCompare(b.text, context.wb.locale()))
+	return sorted
 }
 
 bot.action(/category:(Q\d+)/, async ctx => {
@@ -74,15 +79,15 @@ bot.action(/category:(Q\d+)/, async ctx => {
 	return endlessFailing(ctx, ctx.match![1], 0)
 })
 
-bot.command(['start', 'help'], async ctx => {
+bot.command(['start', 'help'], async context => {
 	let text = ''
 	text += 'When you chose a category you get 4 images from it. One of them does not fit into the same category as the other 3.'
 
-	if (!ctx.message || !ctx.from) {
+	if (!context.message || !context.from) {
 		throw new Error('something is strange')
 	}
 
-	if (ctx.message.text === '/help') {
+	if (context.message.text === '/help') {
 		text += '\n\n'
 		text += 'All the data is coming from wikidata.org. Also this bot tries to respect your Telegram Client language for wikidata items when possible.'
 		text += '\n\n'
@@ -91,20 +96,18 @@ bot.command(['start', 'help'], async ctx => {
 		text += 'Also you can send Pull Requests for this bot at https://github.com/EdJoPaTo/wikidata-misfit-bot. Maybe add another category. 🙃'
 	}
 
-	const lang = (ctx.from.language_code || 'en').split('-')[0]
-	return ctx.reply(text, Extra.webPreview(false).markup(
-		Markup.inlineKeyboard(await selectorKeyboard(lang), {columns: 3})
+	return context.reply(text, Extra.webPreview(false).markup(
+		Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3})
 	))
 })
 
-bot.action(/^a:.+/, Telegraf.privateChat(async (ctx: TelegrafContext) => {
-	if (!ctx.from) {
+bot.action(/^a:.+/, Telegraf.privateChat(async context => {
+	if (!context.from) {
 		throw new Error('something is strange')
 	}
 
-	const lang = (ctx.from.language_code || 'en').split('-')[0]
-	return ctx.reply('Another one?', Extra.markup(
-		Markup.inlineKeyboard(await selectorKeyboard(lang), {columns: 3})
+	return context.reply('Another one?', Extra.markup(
+		Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3})
 	) as any)
 }))
 

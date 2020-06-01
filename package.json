@@ -27,8 +27,7 @@
 	"dependencies": {
 		"source-map-support": "^0.5.12",
 		"telegraf": "^3.38.0",
-		"wikidata-entity-reader": "^2.0.0",
-		"wikidata-entity-store": "^3.0.0",
+		"telegraf-wikibase": "^0.5.0",
 		"wikidata-sdk-got": "^2.0.1"
 	},
 	"devDependencies": {

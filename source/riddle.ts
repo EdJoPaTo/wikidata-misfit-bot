@@ -1,6 +1,6 @@
-import {Composer, Context as TelegrafContext, Extra, Markup} from 'telegraf'
-import WikidataEntityReader from 'wikidata-entity-reader'
-import WikidataEntityStore from 'wikidata-entity-store'
+import {Composer, Extra, Markup} from 'telegraf'
+
+import {Context} from './context'
 
 import {
 	commonParents,
@@ -16,14 +16,8 @@ type MessageMedia = {
 	parse_mode: 'Markdown';
 }
 
-let store: WikidataEntityStore
-
-export function init(entityStore: WikidataEntityStore): void {
-	store = entityStore
-}
-
-function labeledItem(item: string, lang: string): string {
-	const reader = new WikidataEntityReader(store.entity(item), lang)
+async function labeledItem(context: Context, item: string): Promise<string> {
+	const reader = await context.wb.reader(item)
 
 	let text = `*${reader.label()}* [${reader.qNumber()}](${reader.url()})`
 
@@ -54,15 +48,6 @@ function getRandomEntries<T>(array: readonly T[], amount = 1): T[] {
 	return entries
 }
 
-function getLang(ctx: TelegrafContext): string {
-	if (!ctx.from) {
-		throw new Error('thats a strange context')
-	}
-
-	const lang: string = ctx.from.language_code || 'en'
-	return lang.split('-')[0]
-}
-
 async function pickItems(correctQNumber: string, differentQNumber: string): Promise<{differentItem: string; items: string[]}> {
 	const [allCorrect, allDifferent]: [string[], string[]] = await Promise.all([
 		getItems(correctQNumber),
@@ -83,17 +68,17 @@ async function pickItems(correctQNumber: string, differentQNumber: string): Prom
 	}
 }
 
-async function create(topCategoryKind: string, lang: string): Promise<{keyboard: any; mediaArray: MessageMedia[]; text: string}> {
+async function create(context: Context, topCategoryKind: string): Promise<{keyboard: any; mediaArray: MessageMedia[]; text: string}> {
 	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]
 	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
 	const {items, differentItem} = await pickItems(subCategories[0], subCategories[1])
 
-	await store.preloadQNumbers(topCategory, ...subCategories, ...items, differentItem)
+	await context.wb.preload([topCategory, ...subCategories, ...items, differentItem])
 
-	const mediaArray = items.map(o => buildEntry(o, lang))
+	const mediaArray = await Promise.all(items.map(async o => buildEntry(context, o)))
 
 	let text = ''
-	text += labeledItem(subCategories[0], lang)
+	text += await labeledItem(context, subCategories[0])
 
 	text += '\n\n'
 	text += mediaArray
@@ -118,21 +103,19 @@ async function create(topCategoryKind: string, lang: string): Promise<{keyboard:
 	}
 }
 
-export async function send(ctx: TelegrafContext, topCategoryKind: string): Promise<void> {
-	const lang = getLang(ctx)
+export async function send(context: Context, topCategoryKind: string): Promise<void> {
+	context.replyWithChatAction('upload_photo').catch(() => {})
+	const {mediaArray, text, keyboard} = await create(context, topCategoryKind)
+	context.replyWithChatAction('upload_photo').catch(() => {})
 
-	ctx.replyWithChatAction('upload_photo').catch(() => {})
-	const {mediaArray, text, keyboard} = await create(topCategoryKind, lang)
-	ctx.replyWithChatAction('upload_photo').catch(() => {})
-
-	const message = await ctx.replyWithMediaGroup(mediaArray)
-	await ctx.reply(text, (Extra.markdown().markup(keyboard) as Extra).webPreview(false).inReplyTo(message.slice(-1)[0].message_id) as any)
+	const message = await context.replyWithMediaGroup(mediaArray)
+	await context.reply(text, (Extra.markdown().markup(keyboard) as Extra).webPreview(false).inReplyTo(message.slice(-1)[0].message_id) as any)
 }
 
-function buildEntry(item: string, lang: string): MessageMedia {
-	const reader = new WikidataEntityReader(store.entity(item), lang)
+async function buildEntry(context: Context, item: string): Promise<MessageMedia> {
+	const reader = await context.wb.reader(item)
 	const images = reader.images(800)
-	const caption = labeledItem(item, lang)
+	const caption = await labeledItem(context, item)
 
 	const imageUrl = getRandomEntries(images)[0]
 
@@ -144,34 +127,34 @@ function buildEntry(item: string, lang: string): MessageMedia {
 	}
 }
 
-export const bot = new Composer()
+export const bot = new Composer<Context>()
 
 bot.action('a-no', async ctx => ctx.answerCbQuery('👎'))
 
-bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: TelegrafContext, next) => {
-	if (!ctx.match || !ctx.callbackQuery || !ctx.callbackQuery.message || !ctx.callbackQuery.message.entities) {
+bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
+	if (!context.match || !context.callbackQuery || !context.callbackQuery.message || !context.callbackQuery.message.entities) {
 		throw new Error('something is wrong with the callback_data')
 	}
 
-	const correctCategory = ctx.match[1]
-	const differentCategory = ctx.match[2]
-	const differentItem = ctx.match[3]
-	const lang = getLang(ctx)
+	const correctCategory = context.match[1]
+	const differentCategory = context.match[2]
+	const differentItem = context.match[3]
 
-	const originalItems: string[] = ctx.callbackQuery.message.entities
+	const originalItems: string[] = context.callbackQuery.message.entities
 		.filter(o => o.url)
 		.map(o => o.url as string)
 		.map(o => o.split('/').slice(-1)[0])
 
 	const commonCategoryItems = await commonParents(correctCategory, differentCategory)
 
-	await store.preloadQNumbers(correctCategory, differentCategory, ...commonCategoryItems, ...originalItems)
+	await context.wb.preload([correctCategory, differentCategory, ...commonCategoryItems, ...originalItems])
 
-	const commonCategoryLabels = commonCategoryItems
-		.map(o => labeledItem(o, lang))
+	const commonCategoryLabels = await Promise.all(commonCategoryItems
+		.map(async o => labeledItem(context, o))
+	)
 
-	const correctCategoryLabel = labeledItem(correctCategory, lang)
-	const differentCategoryLabel = labeledItem(differentCategory, lang)
+	const correctCategoryLabel = await labeledItem(context, correctCategory)
+	const differentCategoryLabel = await labeledItem(context, differentCategory)
 
 	let text = ''
 	text += commonCategoryLabels.join('\n')
@@ -180,9 +163,9 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: TelegrafContext, next) => {
 	const oldLines = await Promise.all(
 		originalItems
 			.slice(1)
-			.map(o => {
+			.map(async o => {
 				const emoji = o === differentItem ? '🚫' : '✅'
-				return `${emoji} ${labeledItem(o, lang)}`
+				return `${emoji} ${await labeledItem(context, o)}`
 			})
 	)
 	text += oldLines
@@ -194,8 +177,8 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (ctx: TelegrafContext, next) => {
 	text += `🚫1x ${differentCategoryLabel}`
 
 	await Promise.all([
-		ctx.editMessageText(text, Extra.markdown().webPreview(false) as any),
-		ctx.answerCbQuery('👍')
+		context.editMessageText(text, Extra.markdown().webPreview(false) as any),
+		context.answerCbQuery('👍')
 	])
 	return next && next()
 })
