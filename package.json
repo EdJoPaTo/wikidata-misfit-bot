@@ -5,8 +5,8 @@
 	"license": "MIT",
 	"repository": "EdJoPaTo/wikidata-misfit-bot",
 	"author": {
-		"name": "Edgar Toll",
-		"email": "edjopato@gmail.com",
+		"name": "EdJoPaTo",
+		"email": "wikidata-misfit-bot@edjopato.de",
 		"url": "https://edjopato.de"
 	},
 	"engines": {
