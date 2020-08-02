@@ -180,5 +180,5 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 		context.editMessageText(text, Extra.markdown().webPreview(false) as any),
 		context.answerCbQuery('👍')
 	])
-	return next && next()
+	return next()
 })
