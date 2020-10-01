@@ -9,6 +9,8 @@ import {getTopCategories} from './queries'
 import * as riddle from './riddle'
 import categories from './categories'
 
+process.title = 'wd-misfit-tgbot'
+
 const twb = new TelegrafWikibase()
 
 const tokenFilePath = existsSync('/run/secrets') ? '/run/secrets/bot-token.txt' : 'bot-token.txt'
