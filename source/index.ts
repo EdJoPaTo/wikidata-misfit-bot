@@ -11,7 +11,10 @@ import categories from './categories'
 
 process.title = 'wd-misfit-tgbot'
 
-const twb = new TelegrafWikibase()
+const twb = new TelegrafWikibase({
+	logQueriedEntityIds: process.env.NODE_ENV !== 'production',
+	userAgent: 'github.com/EdJoPaTo/wikidata-misfit-bot'
+})
 
 const tokenFilePath = existsSync('/run/secrets') ? '/run/secrets/bot-token.txt' : 'bot-token.txt'
 const token = readFileSync(tokenFilePath, 'utf8').trim()
