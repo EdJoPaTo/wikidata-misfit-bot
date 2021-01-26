@@ -1,7 +1,7 @@
 import {readFileSync, existsSync} from 'fs'
 
-import {InlineKeyboardButton} from 'telegraf/typings/markup'
-import {Telegraf, Extra, Markup} from 'telegraf'
+import {InlineKeyboardButton} from 'typegram'
+import {Telegraf, Markup} from 'telegraf'
 import {TelegrafWikibase} from 'telegraf-wikibase'
 
 import {Context} from './context'
@@ -16,8 +16,13 @@ const twb = new TelegrafWikibase({
 	userAgent: 'github.com/EdJoPaTo/wikidata-misfit-bot'
 })
 
-const tokenFilePath = existsSync('/run/secrets') ? '/run/secrets/bot-token.txt' : 'bot-token.txt'
-const token = readFileSync(tokenFilePath, 'utf8').trim()
+const token = (existsSync('/run/secrets/bot-token.txt') && readFileSync('/run/secrets/bot-token.txt', 'utf8').trim()) ||
+	(existsSync('bot-token.txt') && readFileSync('bot-token.txt', 'utf8').trim()) ||
+	process.env.BOT_TOKEN
+if (!token) {
+	throw new Error('You have to provide the bot-token from @BotFather via file (bot-token.txt) or environment variable (BOT_TOKEN)')
+}
+
 const bot = new Telegraf<Context>(token)
 
 bot.use(async (ctx, next) => {
@@ -25,8 +30,8 @@ bot.use(async (ctx, next) => {
 		if (next) {
 			await next()
 		}
-	} catch (error) {
-		console.log('try send error', error && error.on && error.on.payload && error.on.payload.media, error)
+	} catch (error: unknown) {
+		console.log('try send error', (error as any)?.on?.payload?.media, error)
 		await ctx.reply('😣 This happens… Please try again.')
 	}
 })
@@ -35,8 +40,8 @@ bot.use(twb.middleware())
 
 bot.use(riddle.bot.middleware())
 
-for (const t of Object.keys(categories)) {
-	bot.command(t, async ctx => endlessFailing(ctx, categories[t], 0))
+for (const qNumber of Object.values(categories)) {
+	bot.command(qNumber, async ctx => endlessFailing(ctx, qNumber, 0))
 }
 
 async function endlessFailing(ctx: any, categoryQNumber: string, attempt: number): Promise<void> {
@@ -49,9 +54,9 @@ async function endlessFailing(ctx: any, categoryQNumber: string, attempt: number
 	try {
 		await riddle.send(ctx, categoryQNumber)
 		return
-	} catch (error) {
+	} catch (error: unknown) {
 		if (attempt < 2) {
-			console.error('endlessFailing', attempt, error.message)
+			console.error('endlessFailing', attempt, error instanceof Error ? error.message : error)
 		} else {
 			console.error('endlessFailing', attempt, error)
 		}
@@ -62,9 +67,9 @@ async function endlessFailing(ctx: any, categoryQNumber: string, attempt: number
 	}
 }
 
-async function selectorButton(context: Context, categoryEntityId: string): Promise<InlineKeyboardButton> {
+async function selectorButton(context: Context, categoryEntityId: string): Promise<InlineKeyboardButton.CallbackButton> {
 	const reader = await context.wb.reader(categoryEntityId)
-	return Markup.callbackButton(reader.label(), `category:${categoryEntityId}`)
+	return Markup.button.callback(reader.label(), `category:${categoryEntityId}`)
 }
 
 async function selectorKeyboard(context: Context): Promise<InlineKeyboardButton[]> {
@@ -81,7 +86,7 @@ bot.action(/category:(Q\d+)/, async ctx => {
 	ctx.answerCbQuery().catch(() => {})
 	ctx.editMessageText('One of the images does not fit…')
 		.catch(() => {})
-	return endlessFailing(ctx, ctx.match![1], 0)
+	return endlessFailing(ctx, ctx.match[1]!, 0)
 })
 
 bot.command(['start', 'help'], async context => {
@@ -101,9 +106,10 @@ bot.command(['start', 'help'], async context => {
 		text += 'Also you can send Pull Requests for this bot at https://github.com/EdJoPaTo/wikidata-misfit-bot. Maybe add another category. 🙃'
 	}
 
-	return context.reply(text, Extra.webPreview(false).markup(
-		Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3})
-	))
+	return context.reply(text, {
+		...Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3}),
+		disable_web_page_preview: true
+	})
 })
 
 bot.action(/^a:.+/, Telegraf.privateChat(async context => {
@@ -111,9 +117,9 @@ bot.action(/^a:.+/, Telegraf.privateChat(async context => {
 		throw new Error('something is strange')
 	}
 
-	return context.reply('Another one?', Extra.markup(
-		Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3})
-	) as any)
+	return context.reply('Another one?', {
+		...Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3})
+	})
 }))
 
 bot.catch((error: any) => {
@@ -134,17 +140,17 @@ async function startup(): Promise<void> {
 	])
 
 	await bot.launch()
-	console.log(new Date(), 'Bot started as', bot.options.username)
+	console.log(new Date(), 'Bot started as', bot.botInfo?.username)
 }
 
 async function preloadCategory(category: string): Promise<void> {
 	const identifier = `preloadCategory ${category}`
 	console.time(identifier)
-	const qNumber = categories[category]
+	const qNumber = categories[category]!
 	try {
 		await getTopCategories(qNumber)
-	} catch (error) {
-		console.log(identifier, 'failed', qNumber, error.message)
+	} catch (error: unknown) {
+		console.log(identifier, 'failed', qNumber, error instanceof Error ? error.message : error)
 	}
 
 	console.timeEnd(identifier)

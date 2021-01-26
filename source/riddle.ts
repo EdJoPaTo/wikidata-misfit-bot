@@ -1,4 +1,5 @@
-import {Composer, Extra, Markup} from 'telegraf'
+import {Composer, Markup} from 'telegraf'
+import {MessageEntity} from 'typegram'
 
 import {Context} from './context'
 
@@ -43,7 +44,7 @@ function getRandomEntries<T>(array: readonly T[], amount = 1): T[] {
 	}
 
 	const entries = randomIds
-		.map(i => array[i])
+		.map(i => array[i]!)
 
 	return entries
 }
@@ -55,7 +56,7 @@ async function pickItems(correctQNumber: string, differentQNumber: string): Prom
 	])
 
 	const correctItems = getRandomEntries(allCorrect, 3)
-	const differentItem = getRandomEntries(allDifferent)[0]
+	const differentItem = getRandomEntries(allDifferent)[0]!
 
 	const items = [
 		...correctItems
@@ -69,16 +70,16 @@ async function pickItems(correctQNumber: string, differentQNumber: string): Prom
 }
 
 async function create(context: Context, topCategoryKind: string): Promise<{keyboard: any; mediaArray: MessageMedia[]; text: string}> {
-	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]
+	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]!
 	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
-	const {items, differentItem} = await pickItems(subCategories[0], subCategories[1])
+	const {items, differentItem} = await pickItems(subCategories[0]!, subCategories[1]!)
 
 	await context.wb.preload([topCategory, ...subCategories, ...items, differentItem])
 
 	const mediaArray = await Promise.all(items.map(async o => buildEntry(context, o)))
 
 	let text = ''
-	text += await labeledItem(context, subCategories[0])
+	text += await labeledItem(context, subCategories[0]!)
 
 	text += '\n\n'
 	text += mediaArray
@@ -89,10 +90,10 @@ async function create(context: Context, topCategoryKind: string): Promise<{keybo
 		items.map((o, i) => {
 			const text = `🚫 ${i + 1}`
 			if (o === differentItem) {
-				return Markup.callbackButton(text, `a:${subCategories[0]}:${subCategories[1]}:${differentItem}`)
+				return Markup.button.callback(text, `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`)
 			}
 
-			return Markup.callbackButton(text, 'a-no')
+			return Markup.button.callback(text, 'a-no')
 		})
 	)
 
@@ -109,7 +110,12 @@ export async function send(context: Context, topCategoryKind: string): Promise<v
 	context.replyWithChatAction('upload_photo').catch(() => {})
 
 	const message = await context.replyWithMediaGroup(mediaArray)
-	await context.reply(text, (Extra.markdown().markup(keyboard) as Extra).webPreview(false).inReplyTo(message.slice(-1)[0].message_id) as any)
+	await context.reply(text, {
+		...keyboard,
+		parse_mode: 'Markdown',
+		disable_web_page_preview: true,
+		reply_to_message_id: message.slice(-1)[0]!.message_id
+	})
 }
 
 async function buildEntry(context: Context, item: string): Promise<MessageMedia> {
@@ -117,7 +123,7 @@ async function buildEntry(context: Context, item: string): Promise<MessageMedia>
 	const images = reader.images(800)
 	const caption = await labeledItem(context, item)
 
-	const imageUrl = getRandomEntries(images)[0]
+	const imageUrl = getRandomEntries(images)[0]!
 
 	return {
 		type: 'photo',
@@ -132,18 +138,18 @@ export const bot = new Composer<Context>()
 bot.action('a-no', async ctx => ctx.answerCbQuery('👎'))
 
 bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
-	if (!context.match || !context.callbackQuery || !context.callbackQuery.message || !context.callbackQuery.message.entities) {
+	if (!context.callbackQuery.message || !('entities' in context.callbackQuery.message) || !context.callbackQuery.message.entities) {
 		throw new Error('something is wrong with the callback_data')
 	}
 
-	const correctCategory = context.match[1]
-	const differentCategory = context.match[2]
-	const differentItem = context.match[3]
+	const correctCategory = context.match[1]!
+	const differentCategory = context.match[2]!
+	const differentItem = context.match[3]!
 
 	const originalItems: string[] = context.callbackQuery.message.entities
-		.filter(o => o.url)
-		.map(o => o.url as string)
-		.map(o => o.split('/').slice(-1)[0])
+		.filter((o): o is MessageEntity.TextLinkMessageEntity => 'url' in o)
+		.map(o => o.url)
+		.map(o => o.split('/').slice(-1)[0]!)
 
 	const commonCategoryItems = await commonParents(correctCategory, differentCategory)
 
@@ -177,7 +183,7 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 	text += `🚫1x ${differentCategoryLabel}`
 
 	await Promise.all([
-		context.editMessageText(text, Extra.markdown().webPreview(false) as any),
+		context.editMessageText(text, {parse_mode: 'Markdown', disable_web_page_preview: true}),
 		context.answerCbQuery('👍')
 	])
 	return next()

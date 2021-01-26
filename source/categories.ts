@@ -1,4 +1,4 @@
-const categories: {[name: string]: string} = {
+const categories: Readonly<Record<string, string>> = {
 	animal: 'Q729',
 	art: 'Q735',
 	computer: 'Q68',
