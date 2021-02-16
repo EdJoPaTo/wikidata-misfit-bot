@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM docker.io/library/node:14-alpine AS builder
 WORKDIR /build
 
 COPY package.json package-lock.json tsconfig.json ./
@@ -10,12 +10,12 @@ RUN node_modules/.bin/tsc
 RUN rm -rf node_modules && npm ci --production
 
 
-FROM node:14-alpine
+FROM docker.io/library/node:14-alpine
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=0 /build/node_modules ./node_modules
-COPY --from=0 /build/dist ./
+COPY --from=builder /build/node_modules ./node_modules
+COPY --from=builder /build/dist ./
 
-CMD node -r source-map-support/register index.js
+CMD node --unhandled-rejections=strict -r source-map-support/register index.js

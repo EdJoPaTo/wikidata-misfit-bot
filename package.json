@@ -13,17 +13,10 @@
 		"node": ">=14"
 	},
 	"scripts": {
-		"build": "del dist && tsc",
+		"build": "del-cli dist && tsc",
 		"start": "ts-node source/index.ts",
 		"test": "tsc --sourceMap && xo && ava"
 	},
-	"files": [
-		"dist"
-	],
-	"keywords": [
-		"wikidata",
-		"wikidataulm"
-	],
 	"dependencies": {
 		"source-map-support": "^0.5.12",
 		"telegraf": "^4.0.0",

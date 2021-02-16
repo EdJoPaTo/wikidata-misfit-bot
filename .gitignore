@@ -1,5 +1,9 @@
+.nyc_output
+/*-*.*.*.tgz
+coverage
 dist
 node_modules
 yarn.lock
 
+# botfiles
 bot-token.txt
