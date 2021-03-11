@@ -1,4 +1,4 @@
-FROM docker.io/library/node:14-alpine AS builder
+FROM docker.io/library/node:14 AS builder
 WORKDIR /build
 
 COPY package.json package-lock.json tsconfig.json ./
@@ -10,7 +10,7 @@ RUN node_modules/.bin/tsc
 RUN rm -rf node_modules && npm ci --production
 
 
-FROM docker.io/library/node:14-alpine
+FROM docker.io/bitnami/node:14-prod
 WORKDIR /app
 
 ENV NODE_ENV=production
