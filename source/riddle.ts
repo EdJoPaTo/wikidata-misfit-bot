@@ -1,14 +1,14 @@
 import {Composer, Markup} from 'telegraf'
 import {InlineKeyboardButton, MessageEntity} from 'typegram'
 
-import {Context} from './context'
+import {Context} from './context.js'
 
 import {
 	commonParents,
 	getTopCategories,
 	getSubCategories,
 	getItems
-} from './queries'
+} from './queries.js'
 
 type MessageMedia = {
 	type: 'photo';

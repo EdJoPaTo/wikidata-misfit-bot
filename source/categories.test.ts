@@ -1,8 +1,8 @@
 import test from 'ava'
 
-import {getTopCategories} from './queries'
+import {getTopCategories} from './queries.js'
 
-import categories from './categories'
+import categories from './categories.js'
 
 for (const [category, qNumber] of Object.entries(categories)) {
 	test(`category has enough subcategories: ${category}`, async t => {

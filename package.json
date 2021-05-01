@@ -9,13 +9,14 @@
 		"email": "wikidata-misfit-bot@edjopato.de",
 		"url": "https://edjopato.de"
 	},
-	"engines": {
-		"node": ">=14"
-	},
 	"scripts": {
 		"build": "del-cli dist && tsc",
-		"start": "ts-node source/index.ts",
+		"start": "node --loader ts-node/esm source/index.ts",
 		"test": "tsc --sourceMap && xo && ava"
+	},
+	"type": "module",
+	"engines": {
+		"node": ">=14"
 	},
 	"dependencies": {
 		"source-map-support": "^0.5.12",
@@ -25,12 +26,12 @@
 		"wikidata-sdk-got": "^2.0.1"
 	},
 	"devDependencies": {
-		"@sindresorhus/tsconfig": "^0.8.0",
+		"@sindresorhus/tsconfig": "^1.0.1",
 		"@types/node": "^15.0.1",
 		"ava": "^3.1.0",
 		"del-cli": "^3.0.0",
 		"ts-node": "^9.0.0",
-		"typescript": "^4.1.3",
+		"typescript": "^4.2.3",
 		"xo": "^0.39.1"
 	},
 	"ava": {
@@ -42,7 +43,11 @@
 			"prefer-named-capture-group": "off",
 			"@typescript-eslint/no-non-null-assertion": "off",
 			"@typescript-eslint/prefer-readonly-parameter-types": "off",
-			"ava/no-ignored-test-files": "off"
+			"ava/no-ignored-test-files": "off",
+			"import/extensions": [
+				"error",
+				"ignorePackages"
+			]
 		}
 	}
 }
