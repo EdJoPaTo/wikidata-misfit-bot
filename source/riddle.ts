@@ -105,11 +105,16 @@ async function create(context: Context, topCategoryKind: string): Promise<{keybo
 }
 
 export async function send(context: Context, topCategoryKind: string): Promise<void> {
-	context.replyWithChatAction('upload_photo').catch(() => {})
-	const {mediaArray, text, keyboard} = await create(context, topCategoryKind)
-	context.replyWithChatAction('upload_photo').catch(() => {})
+	const [{mediaArray, text, keyboard}] = await Promise.all([
+		create(context, topCategoryKind),
+		context.replyWithChatAction('upload_photo')
+	])
 
-	const message = await context.replyWithMediaGroup(mediaArray)
+	const [message] = await Promise.all([
+		context.replyWithMediaGroup(mediaArray),
+		context.replyWithChatAction('upload_photo')
+	])
+
 	await context.reply(text, {
 		...keyboard,
 		parse_mode: 'Markdown',
