@@ -44,7 +44,7 @@ for (const qNumber of Object.values(categories)) {
 	bot.command(qNumber, async ctx => endlessFailing(ctx, qNumber, 0))
 }
 
-async function endlessFailing(ctx: any, categoryQNumber: string, attempt: number): Promise<void> {
+async function endlessFailing(ctx: Context, categoryQNumber: string, attempt: number): Promise<void> {
 	/* Reasons can be
 	- Image is SVG, Telegram does not support SVG
 	- Image was not successfully loaded by Telegram fast enough
@@ -83,9 +83,11 @@ async function selectorKeyboard(context: Context): Promise<InlineKeyboardButton[
 }
 
 bot.action(/category:(Q\d+)/, async ctx => {
-	ctx.answerCbQuery().catch(() => {})
-	ctx.editMessageText('One of the images does not fit…')
-		.catch(() => {})
+	try {
+		await ctx.answerCbQuery()
+		await ctx.editMessageText('One of the images does not fit…')
+	} catch {}
+
 	return endlessFailing(ctx, ctx.match[1]!, 0)
 })
 

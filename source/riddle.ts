@@ -1,5 +1,5 @@
 import {Composer, Markup} from 'telegraf'
-import {MessageEntity} from 'typegram'
+import {InlineKeyboardButton, MessageEntity} from 'typegram'
 
 import {Context} from './context'
 
@@ -69,7 +69,7 @@ async function pickItems(correctQNumber: string, differentQNumber: string): Prom
 	}
 }
 
-async function create(context: Context, topCategoryKind: string): Promise<{keyboard: any; mediaArray: MessageMedia[]; text: string}> {
+async function create(context: Context, topCategoryKind: string): Promise<{keyboardButtons: InlineKeyboardButton[]; mediaArray: MessageMedia[]; text: string}> {
 	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]!
 	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
 	const {items, differentItem} = await pickItems(subCategories[0]!, subCategories[1]!)
@@ -86,26 +86,24 @@ async function create(context: Context, topCategoryKind: string): Promise<{keybo
 		.map(o => o.caption)
 		.join('\n')
 
-	const keyboard = Markup.inlineKeyboard(
-		items.map((o, i) => {
-			const text = `🚫 ${i + 1}`
-			if (o === differentItem) {
-				return Markup.button.callback(text, `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`)
-			}
+	const keyboardButtons = items.map((o, i) => {
+		const text = `🚫 ${i + 1}`
+		if (o === differentItem) {
+			return Markup.button.callback(text, `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`)
+		}
 
-			return Markup.button.callback(text, 'a-no')
-		})
-	)
+		return Markup.button.callback(text, 'a-no')
+	})
 
 	return {
-		keyboard,
+		keyboardButtons,
 		mediaArray,
 		text
 	}
 }
 
 export async function send(context: Context, topCategoryKind: string): Promise<void> {
-	const [{mediaArray, text, keyboard}] = await Promise.all([
+	const [{mediaArray, text, keyboardButtons}] = await Promise.all([
 		create(context, topCategoryKind),
 		context.replyWithChatAction('upload_photo')
 	])
@@ -116,7 +114,7 @@ export async function send(context: Context, topCategoryKind: string): Promise<v
 	])
 
 	await context.reply(text, {
-		...keyboard,
+		...Markup.inlineKeyboard(keyboardButtons),
 		parse_mode: 'Markdown',
 		disable_web_page_preview: true,
 		reply_to_message_id: message.slice(-1)[0]!.message_id
