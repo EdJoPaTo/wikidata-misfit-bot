@@ -31,6 +31,7 @@ bot.use(async (ctx, next) => {
 			await next()
 		}
 	} catch (error: unknown) {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		console.log('try send error', (error as any)?.on?.payload?.media, error)
 		await ctx.reply('😣 This happens… Please try again.')
 	}
