@@ -1,10 +1,11 @@
 import {readFileSync, existsSync} from 'fs'
 
-import {InlineKeyboardButton} from 'typegram'
-import {Telegraf, Markup} from 'telegraf'
+import {Bot} from 'grammy'
+import {InlineKeyboardButton} from 'grammy/out/platform'
 import {TelegrafWikibase} from 'telegraf-wikibase'
 
 import {Context} from './context.js'
+import {getButtonsAsRows} from './keyboard.js'
 import {getTopCategories} from './queries.js'
 import * as riddle from './riddle.js'
 import categories from './categories.js'
@@ -23,7 +24,7 @@ if (!token) {
 	throw new Error('You have to provide the bot-token from @BotFather via file (bot-token.txt) or environment variable (BOT_TOKEN)')
 }
 
-const bot = new Telegraf<Context>(token)
+const bot = new Bot<Context>(token)
 
 bot.use(async (ctx, next) => {
 	try {
@@ -31,8 +32,7 @@ bot.use(async (ctx, next) => {
 			await next()
 		}
 	} catch (error: unknown) {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		console.log('try send error', (error as any)?.on?.payload?.media, error)
+		console.log('try send error', error)
 		await ctx.reply('😣 This happens… Please try again.')
 	}
 })
@@ -70,37 +70,34 @@ async function endlessFailing(ctx: Context, categoryQNumber: string, attempt: nu
 
 async function selectorButton(context: Context, categoryEntityId: string): Promise<InlineKeyboardButton.CallbackButton> {
 	const reader = await context.wb.reader(categoryEntityId)
-	return Markup.button.callback(reader.label(), `category:${categoryEntityId}`)
+	return {text: reader.label(), callback_data: `category:${categoryEntityId}`}
 }
 
-async function selectorKeyboard(context: Context): Promise<InlineKeyboardButton[]> {
+async function selectorKeyboard(context: Context): Promise<InlineKeyboardButton[][]> {
 	await context.wb.preload(Object.values(categories))
 	const buttons = await Promise.all(Object.values(categories)
 		.map(async o => selectorButton(context, o)),
 	)
 	const sorted = buttons
 		.sort((a, b) => a.text.localeCompare(b.text, context.wb.locale()))
-	return sorted
+	const keyboard = getButtonsAsRows(sorted, 3)
+	return keyboard
 }
 
-bot.action(/category:(Q\d+)/, async ctx => {
+bot.callbackQuery(/category:(Q\d+)/, async ctx => {
 	try {
-		await ctx.answerCbQuery()
+		await ctx.answerCallbackQuery()
 		await ctx.editMessageText('One of the images does not fit…')
 	} catch {}
 
-	return endlessFailing(ctx, ctx.match[1]!, 0)
+	return endlessFailing(ctx, ctx.match![1]!, 0)
 })
 
 bot.command(['start', 'help'], async context => {
 	let text = ''
 	text += 'When you chose a category you get 4 images from it. One of them does not fit into the same category as the other 3.'
 
-	if (!context.message || !context.from) {
-		throw new Error('something is strange')
-	}
-
-	if (context.message.text === '/help') {
+	if (context.message?.text === '/help') {
 		text += '\n\n'
 		text += 'All the data is coming from wikidata.org. Also this bot tries to respect your Telegram Client language for wikidata items when possible.'
 		text += '\n\n'
@@ -110,22 +107,18 @@ bot.command(['start', 'help'], async context => {
 	}
 
 	return context.reply(text, {
-		...Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3}),
+		reply_markup: {inline_keyboard: await selectorKeyboard(context)},
 		disable_web_page_preview: true,
 	})
 })
 
-bot.action(/^a:.+/, Telegraf.privateChat(async context => {
-	if (!context.from) {
-		throw new Error('something is strange')
-	}
+bot.filter(o => o.chat?.type === 'private').callbackQuery(/^a:.+/, async context => context.reply(
+	'Another one?', {
+		reply_markup: {inline_keyboard: await selectorKeyboard(context)},
+	}),
+)
 
-	return context.reply('Another one?', {
-		...Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3}),
-	})
-}))
-
-bot.catch((error: any) => {
+bot.catch(error => {
 	console.error('bot.catch', error)
 })
 
@@ -137,13 +130,15 @@ async function startup(): Promise<void> {
 
 	console.log(new Date(), 'cache filled')
 
-	await bot.telegram.setMyCommands([
+	await bot.api.setMyCommands([
 		{command: 'start', description: 'show the category selector'},
 		{command: 'help', description: 'show help'},
 	])
 
-	await bot.launch()
-	console.log(new Date(), 'Bot started as', bot.botInfo?.username)
+	const {username} = await bot.api.getMe()
+
+	console.log(new Date(), 'Bot starts as', username)
+	await bot.start()
 }
 
 async function preloadCategory(category: string): Promise<void> {

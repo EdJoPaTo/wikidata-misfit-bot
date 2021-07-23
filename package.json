@@ -19,10 +19,9 @@
 		"node": ">=14"
 	},
 	"dependencies": {
+		"grammy": "^1.2.0",
 		"source-map-support": "^0.5.12",
-		"telegraf": "^4.0.0",
 		"telegraf-wikibase": "^0.10.1",
-		"typegram": "^3.1.8",
 		"wikidata-sdk-got": "^2.0.1"
 	},
 	"devDependencies": {

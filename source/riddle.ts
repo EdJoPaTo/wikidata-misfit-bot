@@ -1,5 +1,5 @@
-import {Composer, Markup} from 'telegraf'
-import {InlineKeyboardButton, MessageEntity} from 'typegram'
+import {Composer} from 'grammy'
+import {InlineKeyboardButton, MessageEntity} from 'grammy/out/platform'
 
 import {Context} from './context.js'
 
@@ -89,10 +89,10 @@ async function create(context: Context, topCategoryKind: string): Promise<{keybo
 	const keyboardButtons = items.map((o, i) => {
 		const text = `🚫 ${i + 1}`
 		if (o === differentItem) {
-			return Markup.button.callback(text, `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`)
+			return {text, callback_data: `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`}
 		}
 
-		return Markup.button.callback(text, 'a-no')
+		return {text, callback_data: 'a-no'}
 	})
 
 	return {
@@ -114,7 +114,7 @@ export async function send(context: Context, topCategoryKind: string): Promise<v
 	])
 
 	await context.reply(text, {
-		...Markup.inlineKeyboard(keyboardButtons),
+		reply_markup: {inline_keyboard: [keyboardButtons]},
 		parse_mode: 'Markdown',
 		disable_web_page_preview: true,
 		reply_to_message_id: message.slice(-1)[0]!.message_id,
@@ -138,10 +138,10 @@ async function buildEntry(context: Context, item: string): Promise<MessageMedia>
 
 export const bot = new Composer<Context>()
 
-bot.action('a-no', async ctx => ctx.answerCbQuery('👎'))
+bot.callbackQuery('a-no', async ctx => ctx.answerCallbackQuery({text: '👎'}))
 
-bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
-	if (!context.callbackQuery.message || !('entities' in context.callbackQuery.message) || !context.callbackQuery.message.entities) {
+bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
+	if (!context.callbackQuery.message?.entities || !context.match) {
 		throw new Error('something is wrong with the callback_data')
 	}
 
@@ -187,7 +187,7 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 
 	await Promise.all([
 		context.editMessageText(text, {parse_mode: 'Markdown', disable_web_page_preview: true}),
-		context.answerCbQuery('👍'),
+		context.answerCallbackQuery({text: '👍'}),
 	])
 	return next()
 })
