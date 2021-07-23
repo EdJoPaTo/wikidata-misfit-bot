@@ -1,5 +1,3 @@
-import {readFileSync, existsSync} from 'fs'
-
 import {Bot} from 'grammy'
 import {InlineKeyboardButton} from 'grammy/out/platform'
 import {TelegrafWikibase} from 'telegraf-wikibase'
@@ -17,11 +15,9 @@ const twb = new TelegrafWikibase({
 	userAgent: 'github.com/EdJoPaTo/wikidata-misfit-bot',
 })
 
-const token = (existsSync('/run/secrets/bot-token.txt') && readFileSync('/run/secrets/bot-token.txt', 'utf8').trim())
-	|| (existsSync('bot-token.txt') && readFileSync('bot-token.txt', 'utf8').trim())
-	|| process.env['BOT_TOKEN']
+const token = process.env['BOT_TOKEN']
 if (!token) {
-	throw new Error('You have to provide the bot-token from @BotFather via file (bot-token.txt) or environment variable (BOT_TOKEN)')
+	throw new Error('You have to provide the bot-token from @BotFather via environment variable (BOT_TOKEN)')
 }
 
 const bot = new Bot<Context>(token)

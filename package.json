@@ -41,7 +41,6 @@
 		"rules": {
 			"ava/no-ignored-test-files": "off",
 			"prefer-named-capture-group": "off",
-			"unicorn/prefer-node-protocol": "off",
 			"import/extensions": [
 				"error",
 				"ignorePackages"
