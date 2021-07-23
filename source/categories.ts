@@ -12,7 +12,7 @@ const categories: Readonly<Record<string, string>> = {
 	socialPhenomenon: 'Q602884',
 	spacecraft: 'Q40218',
 	vehicle: 'Q42889',
-	weapon: 'Q728'
+	weapon: 'Q728',
 }
 
 export default categories

@@ -13,12 +13,12 @@ process.title = 'wd-misfit-tgbot'
 
 const twb = new TelegrafWikibase({
 	logQueriedEntityIds: process.env['NODE_ENV'] !== 'production',
-	userAgent: 'github.com/EdJoPaTo/wikidata-misfit-bot'
+	userAgent: 'github.com/EdJoPaTo/wikidata-misfit-bot',
 })
 
-const token = (existsSync('/run/secrets/bot-token.txt') && readFileSync('/run/secrets/bot-token.txt', 'utf8').trim()) ||
-	(existsSync('bot-token.txt') && readFileSync('bot-token.txt', 'utf8').trim()) ||
-	process.env['BOT_TOKEN']
+const token = (existsSync('/run/secrets/bot-token.txt') && readFileSync('/run/secrets/bot-token.txt', 'utf8').trim())
+	|| (existsSync('bot-token.txt') && readFileSync('bot-token.txt', 'utf8').trim())
+	|| process.env['BOT_TOKEN']
 if (!token) {
 	throw new Error('You have to provide the bot-token from @BotFather via file (bot-token.txt) or environment variable (BOT_TOKEN)')
 }
@@ -76,7 +76,7 @@ async function selectorButton(context: Context, categoryEntityId: string): Promi
 async function selectorKeyboard(context: Context): Promise<InlineKeyboardButton[]> {
 	await context.wb.preload(Object.values(categories))
 	const buttons = await Promise.all(Object.values(categories)
-		.map(async o => selectorButton(context, o))
+		.map(async o => selectorButton(context, o)),
 	)
 	const sorted = buttons
 		.sort((a, b) => a.text.localeCompare(b.text, context.wb.locale()))
@@ -111,7 +111,7 @@ bot.command(['start', 'help'], async context => {
 
 	return context.reply(text, {
 		...Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3}),
-		disable_web_page_preview: true
+		disable_web_page_preview: true,
 	})
 })
 
@@ -121,7 +121,7 @@ bot.action(/^a:.+/, Telegraf.privateChat(async context => {
 	}
 
 	return context.reply('Another one?', {
-		...Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3})
+		...Markup.inlineKeyboard(await selectorKeyboard(context), {columns: 3}),
 	})
 }))
 
@@ -132,14 +132,14 @@ bot.catch((error: any) => {
 async function startup(): Promise<void> {
 	await Promise.all(
 		Object.keys(categories)
-			.map(async o => preloadCategory(o))
+			.map(async o => preloadCategory(o)),
 	)
 
 	console.log(new Date(), 'cache filled')
 
 	await bot.telegram.setMyCommands([
 		{command: 'start', description: 'show the category selector'},
-		{command: 'help', description: 'show help'}
+		{command: 'help', description: 'show help'},
 	])
 
 	await bot.launch()

@@ -7,7 +7,7 @@ import {
 	commonParents,
 	getTopCategories,
 	getSubCategories,
-	getItems
+	getItems,
 } from './queries.js'
 
 type MessageMedia = {
@@ -52,20 +52,20 @@ function getRandomEntries<T>(array: readonly T[], amount = 1): T[] {
 async function pickItems(correctQNumber: string, differentQNumber: string): Promise<{differentItem: string; items: string[]}> {
 	const [allCorrect, allDifferent]: [string[], string[]] = await Promise.all([
 		getItems(correctQNumber),
-		getItems(differentQNumber)
+		getItems(differentQNumber),
 	])
 
 	const correctItems = getRandomEntries(allCorrect, 3)
 	const differentItem = getRandomEntries(allDifferent)[0]!
 
 	const items = [
-		...correctItems
+		...correctItems,
 	]
 	items.splice(Math.floor(Math.random() * (items.length + 1)), 0, differentItem)
 
 	return {
 		differentItem,
-		items
+		items,
 	}
 }
 
@@ -98,26 +98,26 @@ async function create(context: Context, topCategoryKind: string): Promise<{keybo
 	return {
 		keyboardButtons,
 		mediaArray,
-		text
+		text,
 	}
 }
 
 export async function send(context: Context, topCategoryKind: string): Promise<void> {
 	const [{mediaArray, text, keyboardButtons}] = await Promise.all([
 		create(context, topCategoryKind),
-		context.replyWithChatAction('upload_photo')
+		context.replyWithChatAction('upload_photo'),
 	])
 
 	const [message] = await Promise.all([
 		context.replyWithMediaGroup(mediaArray),
-		context.replyWithChatAction('upload_photo')
+		context.replyWithChatAction('upload_photo'),
 	])
 
 	await context.reply(text, {
 		...Markup.inlineKeyboard(keyboardButtons),
 		parse_mode: 'Markdown',
 		disable_web_page_preview: true,
-		reply_to_message_id: message.slice(-1)[0]!.message_id
+		reply_to_message_id: message.slice(-1)[0]!.message_id,
 	})
 }
 
@@ -132,7 +132,7 @@ async function buildEntry(context: Context, item: string): Promise<MessageMedia>
 		type: 'photo',
 		media: imageUrl,
 		caption,
-		parse_mode: 'Markdown'
+		parse_mode: 'Markdown',
 	}
 }
 
@@ -159,7 +159,7 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 	await context.wb.preload([correctCategory, differentCategory, ...commonCategoryItems, ...originalItems])
 
 	const commonCategoryLabels = await Promise.all(commonCategoryItems
-		.map(async o => labeledItem(context, o))
+		.map(async o => labeledItem(context, o)),
 	)
 
 	const correctCategoryLabel = await labeledItem(context, correctCategory)
@@ -175,7 +175,7 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 			.map(async o => {
 				const emoji = o === differentItem ? '🚫' : '✅'
 				return `${emoji} ${await labeledItem(context, o)}`
-			})
+			}),
 	)
 	text += oldLines
 		.join('\n')
@@ -187,7 +187,7 @@ bot.action(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 
 	await Promise.all([
 		context.editMessageText(text, {parse_mode: 'Markdown', disable_web_page_preview: true}),
-		context.answerCbQuery('👍')
+		context.answerCbQuery('👍'),
 	])
 	return next()
 })

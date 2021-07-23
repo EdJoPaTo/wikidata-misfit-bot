@@ -27,12 +27,12 @@
 	},
 	"devDependencies": {
 		"@sindresorhus/tsconfig": "^1.0.1",
-		"@types/node": "^15.0.1",
+		"@types/node": "^16.0.0",
 		"ava": "^3.1.0",
 		"del-cli": "^4.0.0",
 		"ts-node": "^10.0.0",
 		"typescript": "^4.2.3",
-		"xo": "^0.40.1"
+		"xo": "^0.42.0"
 	},
 	"ava": {
 		"timeout": "70s"
@@ -40,8 +40,6 @@
 	"xo": {
 		"semicolon": false,
 		"rules": {
-			"@typescript-eslint/no-non-null-assertion": "off",
-			"@typescript-eslint/prefer-readonly-parameter-types": "off",
 			"ava/no-ignored-test-files": "off",
 			"prefer-named-capture-group": "off",
 			"unicorn/prefer-node-protocol": "off",
