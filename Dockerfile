@@ -15,11 +15,10 @@ RUN npm ci --production
 
 
 FROM docker.io/library/node:14-alpine
-WORKDIR /app
-
 ENV NODE_ENV=production
-
 RUN apk upgrade --no-cache
+
+WORKDIR /app
 
 COPY package.json ./
 COPY --from=packages /build/node_modules ./node_modules
