@@ -1,4 +1,4 @@
-const categories: Readonly<Record<string, string>> = {
+export const CATEGORIES: Readonly<Record<string, string>> = {
 	animal: 'Q729',
 	art: 'Q735',
 	computer: 'Q68',
@@ -14,5 +14,3 @@ const categories: Readonly<Record<string, string>> = {
 	vehicle: 'Q42889',
 	weapon: 'Q728',
 }
-
-export default categories

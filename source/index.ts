@@ -4,11 +4,11 @@ import {Bot} from 'grammy'
 import {InlineKeyboardButton} from 'grammy/out/platform'
 import {TelegrafWikibase} from 'telegraf-wikibase'
 
+import {CATEGORIES} from './categories.js'
 import {Context} from './context.js'
 import {getButtonsAsRows} from './keyboard.js'
 import {getTopCategories} from './queries.js'
 import * as riddle from './riddle.js'
-import categories from './categories.js'
 
 process.title = 'wd-misfit-tgbot'
 
@@ -41,7 +41,7 @@ bot.use(twb.middleware())
 
 bot.use(riddle.bot.middleware())
 
-for (const qNumber of Object.values(categories)) {
+for (const qNumber of Object.values(CATEGORIES)) {
 	bot.command(qNumber, async ctx => endlessFailing(ctx, qNumber, 0))
 }
 
@@ -74,8 +74,8 @@ async function selectorButton(context: Context, categoryEntityId: string): Promi
 }
 
 async function selectorKeyboard(context: Context): Promise<InlineKeyboardButton[][]> {
-	await context.wb.preload(Object.values(categories))
-	const buttons = await Promise.all(Object.values(categories)
+	await context.wb.preload(Object.values(CATEGORIES))
+	const buttons = await Promise.all(Object.values(CATEGORIES)
 		.map(async o => selectorButton(context, o)),
 	)
 	const sorted = buttons
@@ -124,7 +124,7 @@ bot.catch(error => {
 
 async function startup(): Promise<void> {
 	await Promise.all(
-		Object.keys(categories)
+		Object.keys(CATEGORIES)
 			.map(async o => preloadCategory(o)),
 	)
 
@@ -144,7 +144,7 @@ async function startup(): Promise<void> {
 async function preloadCategory(category: string): Promise<void> {
 	const identifier = `preloadCategory ${category}`
 	console.time(identifier)
-	const qNumber = categories[category]!
+	const qNumber = CATEGORIES[category]!
 	try {
 		await getTopCategories(qNumber)
 	} catch (error: unknown) {

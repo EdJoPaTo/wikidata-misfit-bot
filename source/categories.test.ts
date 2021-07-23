@@ -2,9 +2,9 @@ import test from 'ava'
 
 import {getTopCategories} from './queries.js'
 
-import categories from './categories.js'
+import {CATEGORIES} from './categories.js'
 
-for (const [category, qNumber] of Object.entries(categories)) {
+for (const [category, qNumber] of Object.entries(CATEGORIES)) {
 	test(`category has enough subcategories: ${category}`, async t => {
 		t.timeout(1000 * 60 * 10) // 10 minutes
 		const result = await getTopCategories(qNumber)
