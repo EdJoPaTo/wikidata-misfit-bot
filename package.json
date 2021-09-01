@@ -21,7 +21,7 @@
 	"dependencies": {
 		"grammy": "^1.2.0",
 		"source-map-support": "^0.5.12",
-		"telegraf-wikibase": "^0.10.1",
+		"telegraf-wikibase": "^0.11.0",
 		"wikidata-sdk-got": "^2.0.1"
 	},
 	"devDependencies": {
