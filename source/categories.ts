@@ -1,5 +1,4 @@
 export const CATEGORIES: Readonly<Record<string, string>> = {
-	animal: 'Q729',
 	art: 'Q735',
 	computer: 'Q68',
 	enterprise: 'Q6881511',
