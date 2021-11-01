@@ -1,5 +1,5 @@
 import {Bot} from 'grammy'
-import {InlineKeyboardButton} from 'grammy/out/platform'
+import {InlineKeyboardButton} from '@grammyjs/types'
 import {TelegrafWikibase} from 'telegraf-wikibase'
 
 import {CATEGORIES} from './categories.js'

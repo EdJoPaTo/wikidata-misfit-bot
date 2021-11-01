@@ -1,5 +1,5 @@
 import {Composer} from 'grammy'
-import {InlineKeyboardButton, MessageEntity} from 'grammy/out/platform'
+import {InlineKeyboardButton, MessageEntity} from '@grammyjs/types'
 
 import {Context} from './context.js'
 
@@ -69,7 +69,7 @@ async function pickItems(correctQNumber: string, differentQNumber: string): Prom
 	}
 }
 
-async function create(context: Context, topCategoryKind: string): Promise<{keyboardButtons: InlineKeyboardButton[]; mediaArray: MessageMedia[]; text: string}> {
+async function create(context: Context, topCategoryKind: string) {
 	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]!
 	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
 	const {items, differentItem} = await pickItems(subCategories[0]!, subCategories[1]!)
@@ -86,7 +86,7 @@ async function create(context: Context, topCategoryKind: string): Promise<{keybo
 		.map(o => o.caption)
 		.join('\n')
 
-	const keyboardButtons = items.map((o, i) => {
+	const keyboardButtons = items.map((o, i): InlineKeyboardButton => {
 		const text = `🚫 ${i + 1}`
 		if (o === differentItem) {
 			return {text, callback_data: `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`}
