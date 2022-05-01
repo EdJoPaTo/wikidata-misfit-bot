@@ -24,7 +24,7 @@ if (!token) {
 const bot = new Bot<Context>(token)
 
 if (process.env['NODE_ENV'] !== 'production') {
-    bot.use(generateUpdateMiddleware());
+	bot.use(generateUpdateMiddleware())
 }
 
 bot.use(async (ctx, next) => {
@@ -119,7 +119,9 @@ bot.filter(o => o.chat?.type === 'private').callbackQuery(/^a:.+/, async context
 	}),
 )
 if (process.env['NODE_ENV'] !== 'production') {
-	bot.use(ctx => console.log('unhandled update', ctx.update))
+	bot.use(ctx => {
+		console.log('unhandled update', ctx.update)
+	})
 }
 
 bot.catch(error => {
@@ -141,7 +143,7 @@ async function startup(): Promise<void> {
 
 	await bot.start({
 		onStart(botInfo) {
-			console.log(new Date(), 'Bot starts as', botInfo.username);
+			console.log(new Date(), 'Bot starts as', botInfo.username)
 		},
 	})
 }
