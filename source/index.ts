@@ -1,4 +1,5 @@
 import {Bot} from 'grammy'
+import {generateUpdateMiddleware} from 'telegraf-middleware-console-time'
 import {InlineKeyboardButton} from '@grammyjs/types'
 import {TelegrafWikibase} from 'telegraf-wikibase'
 
@@ -21,6 +22,10 @@ if (!token) {
 }
 
 const bot = new Bot<Context>(token)
+
+if (process.env['NODE_ENV'] !== 'production') {
+    bot.use(generateUpdateMiddleware());
+}
 
 bot.use(async (ctx, next) => {
 	try {
@@ -113,6 +118,9 @@ bot.filter(o => o.chat?.type === 'private').callbackQuery(/^a:.+/, async context
 		reply_markup: {inline_keyboard: await selectorKeyboard(context)},
 	}),
 )
+if (process.env['NODE_ENV'] !== 'production') {
+	bot.use(ctx => console.log('unhandled update', ctx.update))
+}
 
 bot.catch(error => {
 	console.error('bot.catch', error)
