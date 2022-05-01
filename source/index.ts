@@ -139,10 +139,11 @@ async function startup(): Promise<void> {
 		{command: 'help', description: 'show help'},
 	])
 
-	const {username} = await bot.api.getMe()
-
-	console.log(new Date(), 'Bot starts as', username)
-	await bot.start()
+	await bot.start({
+		onStart(botInfo) {
+			console.log(new Date(), 'Bot starts as', botInfo.username);
+		},
+	})
 }
 
 async function preloadCategory(category: string): Promise<void> {
