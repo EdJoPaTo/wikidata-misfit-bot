@@ -7,7 +7,6 @@ export const CATEGORIES: Readonly<Record<string, string>> = {
 	game: 'Q11410',
 	instrument: 'Q34379',
 	motion: 'Q79782',
-	openKnowledge: 'Q2251455',
 	plant: 'Q756',
 	socialInteraction: 'Q609298',
 	spacecraft: 'Q40218',
