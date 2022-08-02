@@ -1,6 +1,6 @@
 import {Bot} from 'grammy'
 import {generateUpdateMiddleware} from 'telegraf-middleware-console-time'
-import {InlineKeyboardButton} from '@grammyjs/types'
+import {InlineKeyboardButton} from 'grammy/types'
 import {TelegrafWikibase} from 'telegraf-wikibase'
 
 import {CATEGORIES} from './categories.js'

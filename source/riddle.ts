@@ -1,5 +1,5 @@
 import {Composer} from 'grammy'
-import {InlineKeyboardButton, MessageEntity} from '@grammyjs/types'
+import {InlineKeyboardButton, MessageEntity} from 'grammy/types'
 
 import {Context} from './context.js'
 
