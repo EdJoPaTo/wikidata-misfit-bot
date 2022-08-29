@@ -1,6 +1,6 @@
-import {Context as BaseContext} from 'grammy'
-import {MiddlewareProperty} from 'telegraf-wikibase'
+import type {Context as BaseContext} from 'grammy'
+import type {MiddlewareProperty} from 'telegraf-wikibase'
 
-export interface Context extends BaseContext {
+export type Context = BaseContext & {
 	readonly wb: MiddlewareProperty;
 }

@@ -1,13 +1,12 @@
 import {Bot} from 'grammy'
 import {generateUpdateMiddleware} from 'telegraf-middleware-console-time'
-import {InlineKeyboardButton} from 'grammy/types'
 import {TelegrafWikibase} from 'telegraf-wikibase'
-
+import type {InlineKeyboardButton} from 'grammy/types'
 import {CATEGORIES} from './categories.js'
-import {Context} from './context.js'
 import {getButtonsAsRows} from './keyboard.js'
 import {getTopCategories} from './queries.js'
 import * as riddle from './riddle.js'
+import type {Context} from './context.js'
 
 process.title = 'wd-misfit-tgbot'
 
@@ -18,7 +17,9 @@ const twb = new TelegrafWikibase({
 
 const token = process.env['BOT_TOKEN']
 if (!token) {
-	throw new Error('You have to provide the bot-token from @BotFather via environment variable (BOT_TOKEN)')
+	throw new Error(
+		'You have to provide the bot-token from @BotFather via environment variable (BOT_TOKEN)',
+	)
 }
 
 const bot = new Bot<Context>(token)
@@ -46,7 +47,11 @@ for (const qNumber of Object.values(CATEGORIES)) {
 	bot.command(qNumber, async ctx => endlessFailing(ctx, qNumber, 0))
 }
 
-async function endlessFailing(ctx: Context, categoryQNumber: string, attempt: number): Promise<void> {
+async function endlessFailing(
+	ctx: Context,
+	categoryQNumber: string,
+	attempt: number,
+): Promise<void> {
 	/* Reasons can be
 	- Image is SVG, Telegram does not support SVG
 	- Image was not successfully loaded by Telegram fast enough
@@ -58,7 +63,11 @@ async function endlessFailing(ctx: Context, categoryQNumber: string, attempt: nu
 		return
 	} catch (error: unknown) {
 		if (attempt < 2) {
-			console.error('endlessFailing', attempt, error instanceof Error ? error.message : error)
+			console.error(
+				'endlessFailing',
+				attempt,
+				error instanceof Error ? error.message : error,
+			)
 		} else {
 			console.error('endlessFailing', attempt, error)
 		}
@@ -69,12 +78,20 @@ async function endlessFailing(ctx: Context, categoryQNumber: string, attempt: nu
 	}
 }
 
-async function selectorButton(context: Context, categoryEntityId: string): Promise<InlineKeyboardButton.CallbackButton> {
+async function selectorButton(
+	context: Context,
+	categoryEntityId: string,
+): Promise<InlineKeyboardButton.CallbackButton> {
 	const reader = await context.wb.reader(categoryEntityId)
-	return {text: reader.label(), callback_data: `category:${categoryEntityId}`}
+	return {
+		text: reader.label(),
+		callback_data: `category:${categoryEntityId}`,
+	}
 }
 
-async function selectorKeyboard(context: Context): Promise<InlineKeyboardButton[][]> {
+async function selectorKeyboard(
+	context: Context,
+): Promise<InlineKeyboardButton[][]> {
 	await context.wb.preload(Object.values(CATEGORIES))
 	const buttons = await Promise.all(Object.values(CATEGORIES)
 		.map(async o => selectorButton(context, o)),
@@ -155,7 +172,12 @@ async function preloadCategory(category: string): Promise<void> {
 	try {
 		await getTopCategories(qNumber)
 	} catch (error: unknown) {
-		console.log(identifier, 'failed', qNumber, error instanceof Error ? error.message : error)
+		console.log(
+			identifier,
+			'failed',
+			qNumber,
+			error instanceof Error ? error.message : error,
+		)
 	}
 
 	console.timeEnd(identifier)

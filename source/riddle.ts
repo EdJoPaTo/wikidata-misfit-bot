@@ -1,13 +1,11 @@
 import {Composer} from 'grammy'
-import {InlineKeyboardButton, MessageEntity} from 'grammy/types'
-
-import {Context} from './context.js'
-
+import type {InlineKeyboardButton, MessageEntity} from 'grammy/types'
+import type {Context} from './context.js'
 import {
 	commonParents,
-	getTopCategories,
-	getSubCategories,
 	getItems,
+	getSubCategories,
+	getTopCategories,
 } from './queries.js'
 
 type MessageMedia = {
@@ -49,7 +47,10 @@ function getRandomEntries<T>(array: readonly T[], amount = 1): T[] {
 	return entries
 }
 
-async function pickItems(correctQNumber: string, differentQNumber: string): Promise<{differentItem: string; items: string[]}> {
+async function pickItems(
+	correctQNumber: string,
+	differentQNumber: string,
+): Promise<{differentItem: string; items: string[]}> {
 	const [allCorrect, allDifferent]: [string[], string[]] = await Promise.all([
 		getItems(correctQNumber),
 		getItems(differentQNumber),
@@ -61,7 +62,11 @@ async function pickItems(correctQNumber: string, differentQNumber: string): Prom
 	const items = [
 		...correctItems,
 	]
-	items.splice(Math.floor(Math.random() * (items.length + 1)), 0, differentItem)
+	items.splice(
+		Math.floor(Math.random() * (items.length + 1)),
+		0,
+		differentItem,
+	)
 
 	return {
 		differentItem,
@@ -74,7 +79,12 @@ async function create(context: Context, topCategoryKind: string) {
 	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
 	const {items, differentItem} = await pickItems(subCategories[0]!, subCategories[1]!)
 
-	await context.wb.preload([topCategory, ...subCategories, ...items, differentItem])
+	await context.wb.preload([
+		topCategory,
+		...subCategories,
+		...items,
+		differentItem,
+	])
 
 	const mediaArray = await Promise.all(items.map(async o => buildEntry(context, o)))
 
@@ -102,7 +112,10 @@ async function create(context: Context, topCategoryKind: string) {
 	}
 }
 
-export async function send(context: Context, topCategoryKind: string): Promise<void> {
+export async function send(
+	context: Context,
+	topCategoryKind: string,
+): Promise<void> {
 	const [{mediaArray, text, keyboardButtons}] = await Promise.all([
 		create(context, topCategoryKind),
 		context.replyWithChatAction('upload_photo'),
@@ -121,7 +134,10 @@ export async function send(context: Context, topCategoryKind: string): Promise<v
 	})
 }
 
-async function buildEntry(context: Context, item: string): Promise<MessageMedia> {
+async function buildEntry(
+	context: Context,
+	item: string,
+): Promise<MessageMedia> {
 	const reader = await context.wb.reader(item)
 	const images = reader.images(800)
 	const caption = await labeledItem(context, item)
@@ -138,7 +154,10 @@ async function buildEntry(context: Context, item: string): Promise<MessageMedia>
 
 export const bot = new Composer<Context>()
 
-bot.callbackQuery('a-no', async ctx => ctx.answerCallbackQuery({text: '👎'}))
+bot.callbackQuery(
+	'a-no',
+	async ctx => ctx.answerCallbackQuery({text: '👎'}),
+)
 
 bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 	if (!context.callbackQuery.message?.entities || !context.match) {
@@ -154,9 +173,17 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 		.map(o => o.url)
 		.map(o => o.split('/').slice(-1)[0]!)
 
-	const commonCategoryItems = await commonParents(correctCategory, differentCategory)
+	const commonCategoryItems = await commonParents(
+		correctCategory,
+		differentCategory,
+	)
 
-	await context.wb.preload([correctCategory, differentCategory, ...commonCategoryItems, ...originalItems])
+	await context.wb.preload([
+		correctCategory,
+		differentCategory,
+		...commonCategoryItems,
+		...originalItems,
+	])
 
 	const commonCategoryLabels = await Promise.all(commonCategoryItems
 		.map(async o => labeledItem(context, o)),
@@ -186,7 +213,10 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 	text += `🚫1x ${differentCategoryLabel}`
 
 	await Promise.all([
-		context.editMessageText(text, {parse_mode: 'Markdown', disable_web_page_preview: true}),
+		context.editMessageText(text, {
+			parse_mode: 'Markdown',
+			disable_web_page_preview: true,
+		}),
 		context.answerCallbackQuery({text: '👍'}),
 	])
 	return next()

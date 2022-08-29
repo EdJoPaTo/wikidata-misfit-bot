@@ -2,7 +2,9 @@ import * as wdkGot from 'wikidata-sdk-got'
 
 const cacheMap = new Map()
 
-export async function getTopCategories(topCategoryKind: string): Promise<string[]> {
+export async function getTopCategories(
+	topCategoryKind: string,
+): Promise<string[]> {
 	const query = `SELECT ?topclass
 	WHERE {
 		SELECT ?topclass ?middleclass WHERE {
