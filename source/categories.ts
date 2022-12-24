@@ -8,7 +8,6 @@ export const CATEGORIES: Readonly<Record<string, string>> = {
 	motion: 'Q79782',
 	performingArts: 'Q184485',
 	plant: 'Q756',
-	sculpture: 'Q17310537',
 	socialInteraction: 'Q609298',
 	spacecraft: 'Q40218',
 	vehicle: 'Q42889',
