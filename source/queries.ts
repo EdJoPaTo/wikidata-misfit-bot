@@ -1,6 +1,6 @@
 import * as wdkGot from 'wikidata-sdk-got'
 
-const cacheMap = new Map()
+const cache = new Map()
 
 export async function getTopCategories(
 	topCategoryKind: string,
@@ -21,7 +21,7 @@ export async function getTopCategories(
 	GROUP BY ?topclass
 	HAVING(COUNT(?middleclass) >= 2)`
 
-	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache: cacheMap})
+	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache})
 	return results as string[]
 }
 
@@ -37,7 +37,7 @@ WHERE {
 GROUP BY ?middleclass
 HAVING(COUNT(?item) >= 5)`
 
-	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache: cacheMap})
+	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache})
 	return results as string[]
 }
 
@@ -51,7 +51,7 @@ WHERE {
 	FILTER EXISTS {?item wdt:P18 ?image}.
 }`
 
-	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache: cacheMap})
+	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache})
 	return results as string[]
 }
 
@@ -67,6 +67,6 @@ export async function commonParents(...items: string[]): Promise<string[]> {
 	queryLines.push('}')
 
 	const query = queryLines.join('\n')
-	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache: cacheMap})
+	const results = await wdkGot.sparqlQuerySimplifiedMinified(query, {cache})
 	return results as string[]
 }

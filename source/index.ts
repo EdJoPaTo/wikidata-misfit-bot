@@ -93,8 +93,8 @@ async function selectorKeyboard(
 	context: Context,
 ): Promise<InlineKeyboardButton[][]> {
 	await context.wb.preload(Object.values(CATEGORIES))
-	const buttons = await Promise.all(Object.values(CATEGORIES)
-		.map(async o => selectorButton(context, o)),
+	const buttons = await Promise.all(
+		Object.values(CATEGORIES).map(async o => selectorButton(context, o)),
 	)
 	const sorted = buttons
 		.sort((a, b) => a.text.localeCompare(b.text, context.wb.locale()))
@@ -108,7 +108,7 @@ bot.callbackQuery(/category:(Q\d+)/, async ctx => {
 		await ctx.editMessageText('One of the images does not fit…')
 	} catch {}
 
-	return endlessFailing(ctx, ctx.match![1]!, 0)
+	return endlessFailing(ctx, ctx.match[1]!, 0)
 })
 
 bot.command(['start', 'help'], async context => {
@@ -130,10 +130,15 @@ bot.command(['start', 'help'], async context => {
 	})
 })
 
-bot.filter(o => o.chat?.type === 'private').callbackQuery(/^a:.+/, async context => context.reply(
-	'Another one?', {
-		reply_markup: {inline_keyboard: await selectorKeyboard(context)},
-	}),
+bot.filter(o => o.chat?.type === 'private').callbackQuery(
+	/^a:.+/,
+	async context =>
+		context.reply(
+			'Another one?',
+			{
+				reply_markup: {inline_keyboard: await selectorKeyboard(context)},
+			},
+		),
 )
 if (process.env['NODE_ENV'] !== 'production') {
 	bot.use(ctx => {
@@ -141,29 +146,10 @@ if (process.env['NODE_ENV'] !== 'production') {
 	})
 }
 
+// eslint-disable-next-line unicorn/prefer-top-level-await
 bot.catch(error => {
 	console.error('bot.catch', error)
 })
-
-async function startup(): Promise<void> {
-	await Promise.all(
-		Object.keys(CATEGORIES)
-			.map(async o => preloadCategory(o)),
-	)
-
-	console.log(new Date(), 'cache filled')
-
-	await bot.api.setMyCommands([
-		{command: 'start', description: 'show the category selector'},
-		{command: 'help', description: 'show help'},
-	])
-
-	await bot.start({
-		onStart(botInfo) {
-			console.log(new Date(), 'Bot starts as', botInfo.username)
-		},
-	})
-}
 
 async function preloadCategory(category: string): Promise<void> {
 	const identifier = `preloadCategory ${category}`
@@ -183,5 +169,19 @@ async function preloadCategory(category: string): Promise<void> {
 	console.timeEnd(identifier)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-startup()
+await Promise.all(
+	Object.keys(CATEGORIES).map(async o => preloadCategory(o)),
+)
+
+console.log(new Date(), 'cache filled')
+
+await bot.api.setMyCommands([
+	{command: 'start', description: 'show the category selector'},
+	{command: 'help', description: 'show help'},
+])
+
+await bot.start({
+	onStart(botInfo) {
+		console.log(new Date(), 'Bot starts as', botInfo.username)
+	},
+})

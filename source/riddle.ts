@@ -75,9 +75,17 @@ async function pickItems(
 }
 
 async function create(context: Context, topCategoryKind: string) {
-	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]!
-	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2)
-	const {items, differentItem} = await pickItems(subCategories[0]!, subCategories[1]!)
+	const topCategory = getRandomEntries(
+		await getTopCategories(topCategoryKind),
+	)[0]!
+	const subCategories = getRandomEntries(
+		await getSubCategories(topCategory),
+		2,
+	)
+	const {items, differentItem} = await pickItems(
+		subCategories[0]!,
+		subCategories[1]!,
+	)
 
 	await context.wb.preload([
 		topCategory,
@@ -86,7 +94,9 @@ async function create(context: Context, topCategoryKind: string) {
 		differentItem,
 	])
 
-	const mediaArray = await Promise.all(items.map(async o => buildEntry(context, o)))
+	const mediaArray = await Promise.all(
+		items.map(async o => buildEntry(context, o)),
+	)
 
 	let text = ''
 	text += await labeledItem(context, subCategories[0]!)
@@ -98,11 +108,10 @@ async function create(context: Context, topCategoryKind: string) {
 
 	const keyboardButtons = items.map((o, i): InlineKeyboardButton => {
 		const text = `🚫 ${i + 1}`
-		if (o === differentItem) {
-			return {text, callback_data: `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`}
-		}
-
-		return {text, callback_data: 'a-no'}
+		const data = o === differentItem
+			? `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`
+			: 'a-no'
+		return {text, callback_data: data}
 	})
 
 	return {
@@ -185,8 +194,8 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 		...originalItems,
 	])
 
-	const commonCategoryLabels = await Promise.all(commonCategoryItems
-		.map(async o => labeledItem(context, o)),
+	const commonCategoryLabels = await Promise.all(
+		commonCategoryItems.map(async o => labeledItem(context, o)),
 	)
 
 	const correctCategoryLabel = await labeledItem(context, correctCategory)
