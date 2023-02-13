@@ -2,7 +2,7 @@ import {Bot} from 'grammy'
 import {generateUpdateMiddleware} from 'telegraf-middleware-console-time'
 import {TelegrafWikibase} from 'telegraf-wikibase'
 import type {InlineKeyboardButton} from 'grammy/types'
-import {CATEGORIES} from './categories.js'
+import {CATEGORIES, type Category} from './categories.js'
 import {getButtonsAsRows} from './keyboard.js'
 import {getTopCategories} from './queries.js'
 import * as riddle from './riddle.js'
@@ -151,10 +151,10 @@ bot.catch(error => {
 	console.error('bot.catch', error)
 })
 
-async function preloadCategory(category: string): Promise<void> {
+async function preloadCategory(category: Category): Promise<void> {
 	const identifier = `preloadCategory ${category}`
 	console.time(identifier)
-	const qNumber = CATEGORIES[category]!
+	const qNumber = CATEGORIES[category]
 	try {
 		await getTopCategories(qNumber)
 	} catch (error: unknown) {
@@ -170,7 +170,7 @@ async function preloadCategory(category: string): Promise<void> {
 }
 
 await Promise.all(
-	Object.keys(CATEGORIES).map(async o => preloadCategory(o)),
+	Object.keys(CATEGORIES).map(async o => preloadCategory(o as Category)),
 )
 
 console.log(new Date(), 'cache filled')

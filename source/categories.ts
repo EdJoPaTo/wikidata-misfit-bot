@@ -1,4 +1,4 @@
-export const CATEGORIES: Readonly<Record<string, string>> = {
+export const CATEGORIES = {
 	computer: 'Q68',
 	enterprise: 'Q6881511',
 	fiction: 'Q14897293',
@@ -13,4 +13,5 @@ export const CATEGORIES: Readonly<Record<string, string>> = {
 	vehicle: 'Q42889',
 	visualArt: 'Q36649',
 	weapon: 'Q728',
-}
+} as const
+export type Category = keyof typeof CATEGORIES
