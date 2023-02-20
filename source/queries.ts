@@ -1,18 +1,18 @@
-// @ts-expect-error there are no types
-import wdk from 'wikidata-sdk'
+// eslint-disable-next-line n/file-extension-in-import
+import {wdk} from 'wikibase-sdk/wikidata.org'
+import {simplify} from 'wikibase-sdk'
 
 const USER_AGENT = 'github.com/EdJoPaTo/wikidata-misfit-bot'
 const headers = new Headers()
 headers.set('user-agent', USER_AGENT)
 
 async function sparqlQuerySimplifiedMinified(query: string): Promise<string[]> {
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-	const url = wdk.sparqlQuery(query) as string
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+	const url = wdk.sparqlQuery(query)
 	const response = await fetch(url, {headers})
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 	const results = await response.json()
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-	return wdk.simplify.sparqlResults(results, {minimize: true}) as string[]
+	return simplify.sparqlResults(results, {minimize: true}) as string[]
 }
 
 export async function getTopCategories(
@@ -41,11 +41,11 @@ export async function getTopCategories(
 export async function getSubCategories(topCategory: string): Promise<string[]> {
 	const query = `SELECT ?middleclass
 WHERE {
-  ?middleclass wdt:P279 wd:${topCategory}.
+	?middleclass wdt:P279 wd:${topCategory}.
 	{ ?item wdt:P31 ?middleclass. }
 	UNION
 	{ ?item wdt:P279 ?middleclass. }
-  FILTER EXISTS {?item wdt:P18 ?image}.
+	FILTER EXISTS {?item wdt:P18 ?image}.
 }
 GROUP BY ?middleclass
 HAVING(COUNT(?item) >= 5)`
