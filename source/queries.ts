@@ -1,18 +1,16 @@
 // eslint-disable-next-line n/file-extension-in-import
 import {wdk} from 'wikibase-sdk/wikidata.org'
-import {simplify} from 'wikibase-sdk'
+import {simplifySparqlResults, type SparqlResults} from 'wikibase-sdk'
 
 const USER_AGENT = 'github.com/EdJoPaTo/wikidata-misfit-bot'
 const headers = new Headers()
 headers.set('user-agent', USER_AGENT)
 
 async function sparqlQuerySimplifiedMinified(query: string): Promise<string[]> {
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 	const url = wdk.sparqlQuery(query)
 	const response = await fetch(url, {headers})
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-	const results = await response.json()
-	return simplify.sparqlResults(results, {minimize: true}) as string[]
+	const results = await response.json() as SparqlResults
+	return simplifySparqlResults(results, {minimize: true}) as string[]
 }
 
 export async function getTopCategories(
