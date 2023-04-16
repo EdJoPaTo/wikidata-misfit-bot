@@ -27,8 +27,8 @@
 		"@sindresorhus/tsconfig": "^3.0.1",
 		"@types/node": "^18.6.2",
 		"ava": "^5.1.0",
-		"typescript": "^4.2.3",
-		"xo": "^0.53.1"
+		"typescript": "^5.0.4",
+		"xo": "^0.54.1"
 	},
 	"ava": {
 		"timeout": "70s"
