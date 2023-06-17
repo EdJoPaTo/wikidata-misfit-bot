@@ -28,23 +28,17 @@ if (process.env['NODE_ENV'] !== 'production') {
 	bot.use(generateUpdateMiddleware())
 }
 
-bot.use(async (ctx, next) => {
-	try {
-		if (next) {
-			await next()
-		}
-	} catch (error: unknown) {
+const safe = bot.errorBoundary(async ({error, ctx}) => {
 		console.log('try send error', error)
 		await ctx.reply('😣 This happens… Please try again.')
-	}
 })
 
-bot.use(twb.middleware())
+safe.use(twb.middleware())
 
-bot.use(riddle.bot.middleware())
+safe.use(riddle.bot.middleware())
 
 for (const qNumber of Object.values(CATEGORIES)) {
-	bot.command(qNumber, async ctx => endlessFailing(ctx, qNumber, 0))
+	safe.command(qNumber, ctx => endlessFailing(ctx, qNumber, 0))
 }
 
 async function endlessFailing(
@@ -94,7 +88,7 @@ async function selectorKeyboard(
 ): Promise<InlineKeyboardButton[][]> {
 	await context.wb.preload(Object.values(CATEGORIES))
 	const buttons = await Promise.all(
-		Object.values(CATEGORIES).map(async o => selectorButton(context, o)),
+		Object.values(CATEGORIES).map(o => selectorButton(context, o)),
 	)
 	const sorted = buttons
 		.sort((a, b) => a.text.localeCompare(b.text, context.wb.locale()))
@@ -102,7 +96,7 @@ async function selectorKeyboard(
 	return keyboard
 }
 
-bot.callbackQuery(/category:(Q\d+)/, async ctx => {
+safe.callbackQuery(/category:(Q\d+)/, async ctx => {
 	try {
 		await ctx.answerCallbackQuery()
 		await ctx.editMessageText('One of the images does not fit…')
@@ -111,7 +105,7 @@ bot.callbackQuery(/category:(Q\d+)/, async ctx => {
 	return endlessFailing(ctx, ctx.match[1]!, 0)
 })
 
-bot.command(['start', 'help'], async context => {
+safe.command(['start', 'help'], async context => {
 	let text = ''
 	text += 'When you chose a category you get 4 images from it. One of them does not fit into the same category as the other 3.'
 
@@ -130,7 +124,7 @@ bot.command(['start', 'help'], async context => {
 	})
 })
 
-bot.filter(o => o.chat?.type === 'private').callbackQuery(
+safe.filter(o => o.chat?.type === 'private').callbackQuery(
 	/^a:.+/,
 	async context =>
 		context.reply(
@@ -141,7 +135,7 @@ bot.filter(o => o.chat?.type === 'private').callbackQuery(
 		),
 )
 if (process.env['NODE_ENV'] !== 'production') {
-	bot.use(ctx => {
+	safe.use(ctx => {
 		console.log('unhandled update', ctx.update)
 	})
 }
