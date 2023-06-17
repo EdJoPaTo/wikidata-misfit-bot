@@ -1,5 +1,5 @@
-import {Composer} from 'grammy'
-import type {InlineKeyboardButton, MessageEntity} from 'grammy/types'
+import {Composer, InlineKeyboard} from 'grammy'
+import type {MessageEntity} from 'grammy/types'
 import type {Context} from './context.js'
 import {
 	commonParents,
@@ -106,16 +106,17 @@ async function create(context: Context, topCategoryKind: string) {
 		.map(o => o.caption)
 		.join('\n')
 
-	const keyboardButtons = items.map((o, i): InlineKeyboardButton => {
+	const buttons = items.map((o, i) => {
 		const text = `🚫 ${i + 1}`
 		const data = o === differentItem
 			? `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`
 			: 'a-no'
-		return {text, callback_data: data}
+		return InlineKeyboard.text(text, data)
 	})
+	const keyboard = new InlineKeyboard([buttons])
 
 	return {
-		keyboardButtons,
+		keyboard,
 		mediaArray,
 		text,
 	}
@@ -125,7 +126,7 @@ export async function send(
 	context: Context,
 	topCategoryKind: string,
 ): Promise<void> {
-	const [{mediaArray, text, keyboardButtons}] = await Promise.all([
+	const [{mediaArray, text, keyboard}] = await Promise.all([
 		create(context, topCategoryKind),
 		context.replyWithChatAction('upload_photo'),
 	])
@@ -136,7 +137,7 @@ export async function send(
 	])
 
 	await context.reply(text, {
-		reply_markup: {inline_keyboard: [keyboardButtons]},
+		reply_markup: keyboard,
 		parse_mode: 'Markdown',
 		disable_web_page_preview: true,
 		reply_to_message_id: message.slice(-1)[0]!.message_id,

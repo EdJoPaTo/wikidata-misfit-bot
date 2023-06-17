@@ -1,9 +1,7 @@
-import {Bot} from 'grammy'
+import {Bot, InlineKeyboard} from 'grammy'
 import {generateUpdateMiddleware} from 'telegraf-middleware-console-time'
 import {TelegrafWikibase} from 'telegraf-wikibase'
-import type {InlineKeyboardButton} from 'grammy/types'
 import {CATEGORIES, type Category} from './categories.js'
-import {getButtonsAsRows} from './keyboard.js'
 import {getTopCategories} from './queries.js'
 import * as riddle from './riddle.js'
 import type {Context} from './context.js'
@@ -29,8 +27,8 @@ if (process.env['NODE_ENV'] !== 'production') {
 }
 
 const safe = bot.errorBoundary(async ({error, ctx}) => {
-		console.log('try send error', error)
-		await ctx.reply('😣 This happens… Please try again.')
+	console.log('try send error', error)
+	await ctx.reply('😣 This happens… Please try again.')
 })
 
 safe.use(twb.middleware())
@@ -38,7 +36,7 @@ safe.use(twb.middleware())
 safe.use(riddle.bot.middleware())
 
 for (const qNumber of Object.values(CATEGORIES)) {
-	safe.command(qNumber, ctx => endlessFailing(ctx, qNumber, 0))
+	safe.command(qNumber, async ctx => endlessFailing(ctx, qNumber, 0))
 }
 
 async function endlessFailing(
@@ -72,28 +70,22 @@ async function endlessFailing(
 	}
 }
 
-async function selectorButton(
-	context: Context,
-	categoryEntityId: string,
-): Promise<InlineKeyboardButton.CallbackButton> {
-	const reader = await context.wb.reader(categoryEntityId)
-	return {
-		text: reader.label(),
-		callback_data: `category:${categoryEntityId}`,
-	}
-}
-
 async function selectorKeyboard(
 	context: Context,
-): Promise<InlineKeyboardButton[][]> {
-	await context.wb.preload(Object.values(CATEGORIES))
-	const buttons = await Promise.all(
-		Object.values(CATEGORIES).map(o => selectorButton(context, o)),
+): Promise<InlineKeyboard> {
+	const categories = Object.values(CATEGORIES)
+	await context.wb.preload(categories)
+	const data = await Promise.all(categories
+		.map(async (category): Promise<[string, string]> => {
+			const r = await context.wb.reader(category)
+			return [r.label(), `category:${category}`]
+		}))
+	const keyboard = InlineKeyboard.from(
+		data
+			.map(([label, cb]) => InlineKeyboard.text(label, cb))
+			.map(button => InlineKeyboard.row(button)),
 	)
-	const sorted = buttons
-		.sort((a, b) => a.text.localeCompare(b.text, context.wb.locale()))
-	const keyboard = getButtonsAsRows(sorted, 3)
-	return keyboard
+	return keyboard.toWrapped(3)
 }
 
 safe.callbackQuery(/category:(Q\d+)/, async ctx => {
@@ -107,19 +99,23 @@ safe.callbackQuery(/category:(Q\d+)/, async ctx => {
 
 safe.command(['start', 'help'], async context => {
 	let text = ''
-	text += 'When you chose a category you get 4 images from it. One of them does not fit into the same category as the other 3.'
+	text
+    += 'When you chose a category you get 4 images from it. One of them does not fit into the same category as the other 3.'
 
 	if (context.message?.text === '/help') {
 		text += '\n\n'
-		text += 'All the data is coming from wikidata.org. Also this bot tries to respect your Telegram Client language for wikidata items when possible.'
+		text
+      += 'All the data is coming from wikidata.org. Also this bot tries to respect your Telegram Client language for wikidata items when possible.'
 		text += '\n\n'
-		text += 'If you think something is wrong with the data use the link to the wikidata and improve it. 😎'
+		text
+      += 'If you think something is wrong with the data use the link to the wikidata and improve it. 😎'
 		text += '\n'
-		text += 'Also you can send Pull Requests for this bot at https://github.com/EdJoPaTo/wikidata-misfit-bot. Maybe add another category. 🙃'
+		text
+      += 'Also you can send Pull Requests for this bot at https://github.com/EdJoPaTo/wikidata-misfit-bot. Maybe add another category. 🙃'
 	}
 
 	return context.reply(text, {
-		reply_markup: {inline_keyboard: await selectorKeyboard(context)},
+		reply_markup: await selectorKeyboard(context),
 		disable_web_page_preview: true,
 	})
 })
@@ -130,7 +126,7 @@ safe.filter(o => o.chat?.type === 'private').callbackQuery(
 		context.reply(
 			'Another one?',
 			{
-				reply_markup: {inline_keyboard: await selectorKeyboard(context)},
+				reply_markup: await selectorKeyboard(context),
 			},
 		),
 )
