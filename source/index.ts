@@ -22,21 +22,15 @@ if (!token) {
 	)
 }
 
-const bot = new Bot<Context>(token)
+const baseBot = new Bot<Context>(token)
 
 if (process.env['NODE_ENV'] !== 'production') {
-	bot.use(generateUpdateMiddleware())
+	baseBot.use(generateUpdateMiddleware())
 }
 
-bot.use(async (ctx, next) => {
-	try {
-		if (next) {
-			await next()
-		}
-	} catch (error: unknown) {
-		console.log('try send error', error)
-		await ctx.reply('😣 This happens… Please try again.')
-	}
+const bot = baseBot.errorBoundary(async ({error, ctx}) => {
+	console.log('try send error', error)
+	await ctx.reply('😣 This happens… Please try again.')
 })
 
 bot.use(twb.middleware())
@@ -145,11 +139,6 @@ if (process.env['NODE_ENV'] !== 'production') {
 	})
 }
 
-// eslint-disable-next-line unicorn/prefer-top-level-await
-bot.catch(error => {
-	console.error('bot.catch', error)
-})
-
 async function preloadCategory(category: Category): Promise<void> {
 	const identifier = `preloadCategory ${category}`
 	console.time(identifier)
@@ -174,12 +163,12 @@ await Promise.all(
 
 console.log(new Date(), 'cache filled')
 
-await bot.api.setMyCommands([
+await baseBot.api.setMyCommands([
 	{command: 'start', description: 'show the category selector'},
 	{command: 'help', description: 'show help'},
 ])
 
-await bot.start({
+await baseBot.start({
 	onStart(botInfo) {
 		console.log(new Date(), 'Bot starts as', botInfo.username)
 	},
