@@ -60,7 +60,6 @@ async function endlessFailing(
 	*/
 	try {
 		await riddle.send(ctx, categoryQNumber)
-		return
 	} catch (error: unknown) {
 		if (attempt < 2) {
 			console.error(
