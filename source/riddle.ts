@@ -139,7 +139,7 @@ export async function send(
 		reply_markup: {inline_keyboard: [keyboardButtons]},
 		parse_mode: 'Markdown',
 		disable_web_page_preview: true,
-		reply_to_message_id: message.slice(-1)[0]!.message_id,
+		reply_to_message_id: message.at(-1)!.message_id,
 	})
 }
 
@@ -180,7 +180,7 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 	const originalItems: string[] = context.callbackQuery.message.entities
 		.filter((o): o is MessageEntity.TextLinkMessageEntity => 'url' in o)
 		.map(o => o.url)
-		.map(o => o.split('/').slice(-1)[0]!)
+		.map(o => o.split('/').at(-1)!)
 
 	const commonCategoryItems = await commonParents(
 		correctCategory,
