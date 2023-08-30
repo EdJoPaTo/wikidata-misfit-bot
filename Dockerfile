@@ -25,4 +25,4 @@ COPY --from=packages /build/node_modules ./node_modules
 COPY --from=builder /build/dist ./
 
 ENTRYPOINT ["node", "--enable-source-maps"]
-CMD ["index.js"]
+CMD ["wikidata-misfit-bot.js"]

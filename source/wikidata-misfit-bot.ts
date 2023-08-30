@@ -1,3 +1,4 @@
+import {env} from 'node:process'
 import {Bot} from 'grammy'
 import {generateUpdateMiddleware} from 'telegraf-middleware-console-time'
 import {TelegrafWikibase} from 'telegraf-wikibase'
@@ -8,14 +9,12 @@ import {getTopCategories} from './queries.js'
 import * as riddle from './riddle.js'
 import type {Context} from './context.js'
 
-process.title = 'wd-misfit-tgbot'
-
 const twb = new TelegrafWikibase({
-	logQueriedEntityIds: process.env['NODE_ENV'] !== 'production',
+	logQueriedEntityIds: env['NODE_ENV'] !== 'production',
 	userAgent: 'github.com/EdJoPaTo/wikidata-misfit-bot',
 })
 
-const token = process.env['BOT_TOKEN']
+const token = env['BOT_TOKEN']
 if (!token) {
 	throw new Error(
 		'You have to provide the bot-token from @BotFather via environment variable (BOT_TOKEN)',
@@ -24,7 +23,7 @@ if (!token) {
 
 const baseBot = new Bot<Context>(token)
 
-if (process.env['NODE_ENV'] !== 'production') {
+if (env['NODE_ENV'] !== 'production') {
 	baseBot.use(generateUpdateMiddleware())
 }
 
@@ -133,7 +132,7 @@ bot.filter(o => o.chat?.type === 'private').callbackQuery(
 			},
 		),
 )
-if (process.env['NODE_ENV'] !== 'production') {
+if (env['NODE_ENV'] !== 'production') {
 	bot.use(ctx => {
 		console.log('unhandled update', ctx.update)
 	})

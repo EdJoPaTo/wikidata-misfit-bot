@@ -10,7 +10,7 @@
 		"url": "https://edjopato.de"
 	},
 	"scripts": {
-		"start": "tsc --sourceMap && node --enable-source-maps dist/index.js",
+		"start": "tsc --sourceMap && node --enable-source-maps dist/wikidata-misfit-bot.js",
 		"test": "tsc --sourceMap && xo && ava"
 	},
 	"type": "module",
@@ -38,7 +38,6 @@
 		"rules": {
 			"@typescript-eslint/naming-convention": "off",
 			"ava/no-ignored-test-files": "off",
-			"n/prefer-global/process": "off",
 			"prefer-named-capture-group": "off"
 		}
 	}
