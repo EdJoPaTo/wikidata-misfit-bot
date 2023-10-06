@@ -24,7 +24,7 @@
 		"wikibase-sdk": "^9.0.5"
 	},
 	"devDependencies": {
-		"@sindresorhus/tsconfig": "^4.0.0",
+		"@sindresorhus/tsconfig": "^5.0.0",
 		"@types/node": "^18.6.2",
 		"ava": "^5.1.0",
 		"typescript": "^5.0.4",
