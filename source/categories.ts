@@ -13,5 +13,5 @@ export const CATEGORIES = {
 	vehicle: 'Q42889',
 	visualArt: 'Q36649',
 	weapon: 'Q728',
-} as const
-export type Category = keyof typeof CATEGORIES
+} as const;
+export type Category = keyof typeof CATEGORIES;

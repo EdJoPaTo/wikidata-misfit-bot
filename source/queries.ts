@@ -1,16 +1,16 @@
 // eslint-disable-next-line n/file-extension-in-import
-import {wdk} from 'wikibase-sdk/wikidata.org'
-import {simplifySparqlResults, type SparqlResults} from 'wikibase-sdk'
+import {wdk} from 'wikibase-sdk/wikidata.org';
+import {simplifySparqlResults, type SparqlResults} from 'wikibase-sdk';
 
-const USER_AGENT = 'github.com/EdJoPaTo/wikidata-misfit-bot'
-const headers = new Headers()
-headers.set('user-agent', USER_AGENT)
+const USER_AGENT = 'github.com/EdJoPaTo/wikidata-misfit-bot';
+const headers = new Headers();
+headers.set('user-agent', USER_AGENT);
 
 async function sparqlQuerySimplifiedMinified(query: string): Promise<string[]> {
-	const url = wdk.sparqlQuery(query)
-	const response = await fetch(url, {headers})
-	const results = await response.json() as SparqlResults
-	return simplifySparqlResults(results, {minimize: true}) as string[]
+	const url = wdk.sparqlQuery(query);
+	const response = await fetch(url, {headers});
+	const results = await response.json() as SparqlResults;
+	return simplifySparqlResults(results, {minimize: true}) as string[];
 }
 
 export async function getTopCategories(
@@ -30,10 +30,10 @@ export async function getTopCategories(
 		HAVING(COUNT(?item) >= 5)
 	}
 	GROUP BY ?topclass
-	HAVING(COUNT(?middleclass) >= 2)`
+	HAVING(COUNT(?middleclass) >= 2)`;
 
-	const results = await sparqlQuerySimplifiedMinified(query)
-	return results
+	const results = await sparqlQuerySimplifiedMinified(query);
+	return results;
 }
 
 export async function getSubCategories(topCategory: string): Promise<string[]> {
@@ -46,10 +46,10 @@ WHERE {
 	FILTER EXISTS {?item wdt:P18 ?image}.
 }
 GROUP BY ?middleclass
-HAVING(COUNT(?item) >= 5)`
+HAVING(COUNT(?item) >= 5)`;
 
-	const results = await sparqlQuerySimplifiedMinified(query)
-	return results
+	const results = await sparqlQuerySimplifiedMinified(query);
+	return results;
 }
 
 export async function getItems(parentItem: string): Promise<string[]> {
@@ -60,24 +60,24 @@ WHERE {
 	UNION
 	{ ?item wdt:P279 ?class. }
 	FILTER EXISTS {?item wdt:P18 ?image}.
-}`
+}`;
 
-	const results = await sparqlQuerySimplifiedMinified(query)
-	return results
+	const results = await sparqlQuerySimplifiedMinified(query);
+	return results;
 }
 
 export async function commonParents(...items: string[]): Promise<string[]> {
-	const queryLines: string[] = []
+	const queryLines: string[] = [];
 
-	queryLines.push('SELECT ?parent WHERE {')
+	queryLines.push('SELECT ?parent WHERE {');
 
 	for (const item of items) {
-		queryLines.push(`  wd:${item} wdt:P279 ?parent.`)
+		queryLines.push(`  wd:${item} wdt:P279 ?parent.`);
 	}
 
-	queryLines.push('}')
+	queryLines.push('}');
 
-	const query = queryLines.join('\n')
-	const results = await sparqlQuerySimplifiedMinified(query)
-	return results
+	const query = queryLines.join('\n');
+	const results = await sparqlQuerySimplifiedMinified(query);
+	return results;
 }
