@@ -1,4 +1,3 @@
-// eslint-disable-next-line n/file-extension-in-import
 import {wdk} from 'wikibase-sdk/wikidata.org';
 import {simplifySparqlResults, type SparqlResults} from 'wikibase-sdk';
 
