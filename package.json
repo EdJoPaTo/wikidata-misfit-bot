@@ -10,8 +10,8 @@
 		"url": "https://edjopato.de"
 	},
 	"scripts": {
-		"start": "tsc --sourceMap && node --enable-source-maps dist/wikidata-misfit-bot.js",
-		"test": "tsc --sourceMap && xo && ava"
+		"start": "tsc && node --enable-source-maps dist/wikidata-misfit-bot.js",
+		"test": "tsc && xo && node --enable-source-maps --test"
 	},
 	"type": "module",
 	"engines": {
@@ -26,17 +26,12 @@
 	"devDependencies": {
 		"@sindresorhus/tsconfig": "^5.0.0",
 		"@types/node": "^20.10.0",
-		"ava": "^5.1.0",
 		"typescript": "^5.0.4",
 		"xo": "^0.56.0"
-	},
-	"ava": {
-		"timeout": "70s"
 	},
 	"xo": {
 		"rules": {
 			"@typescript-eslint/naming-convention": "off",
-			"ava/no-ignored-test-files": "off",
 			"prefer-named-capture-group": "off"
 		}
 	}

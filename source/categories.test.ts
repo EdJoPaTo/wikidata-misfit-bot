@@ -1,13 +1,20 @@
-import test from 'ava';
+import {ok} from 'node:assert';
+import {test} from 'node:test';
 import {CATEGORIES} from './categories.js';
 import {getTopCategories} from './queries.js';
 
-for (const [category, qNumber] of Object.entries(CATEGORIES)) {
-	test(`category has enough subcategories: ${category}`, async t => {
-		t.timeout(1000 * 60 * 10); // 10 minutes
-		const result = await getTopCategories(qNumber);
-		t.log(result.length);
-		t.log(result.join(' '));
-		t.true(result.length >= 5);
-	});
-}
+await test('category has enough subcategories', {
+	concurrency: 4, // Run multiple while not overwhelming Wikidata Servers
+}, async t => {
+	await Promise.all(
+		Object.entries(CATEGORIES).map(async ([category, qNumber]) =>
+			t.test(category, {
+				timeout: 1000 * 70 * 10, // 70 seconds
+			}, async () => {
+				const result = await getTopCategories(qNumber);
+				console.log('category', category, result.length, result.join(' '));
+				ok(result.length >= 5);
+			}),
+		),
+	);
+});
