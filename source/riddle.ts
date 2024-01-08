@@ -136,9 +136,9 @@ export async function send(
 	]);
 
 	await context.reply(text, {
-		reply_markup: {inline_keyboard: [keyboardButtons]},
+		link_preview_options: {is_disabled: true},
 		parse_mode: 'Markdown',
-		disable_web_page_preview: true,
+		reply_markup: {inline_keyboard: [keyboardButtons]},
 		reply_to_message_id: message.at(-1)!.message_id,
 	});
 }
@@ -224,7 +224,7 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 	await Promise.all([
 		context.editMessageText(text, {
 			parse_mode: 'Markdown',
-			disable_web_page_preview: true,
+			link_preview_options: {is_disabled: true},
 		}),
 		context.answerCallbackQuery({text: '👍'}),
 	]);
