@@ -122,6 +122,12 @@ bot.command(['start', 'help'], async context => {
 	});
 });
 
+bot.command('privacy', async ctx =>
+	ctx.reply(
+		'This bot does not store any data about you and works stateless. It requests Wikidata with a common identity for all users, so Wikidata can not distinguish any users of this bot. See the source code at https://github.com/EdJoPaTo/wikidata-misfit-bot',
+		{reply_markup: {remove_keyboard: true}},
+	));
+
 bot.filter(o => o.chat?.type === 'private').callbackQuery(
 	/^a:.+/,
 	async context =>
