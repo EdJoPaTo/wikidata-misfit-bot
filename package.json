@@ -18,7 +18,7 @@
 		"node": ">=20"
 	},
 	"dependencies": {
-		"grammy": "^1.32.0",
+		"grammy": "^1.33.0",
 		"telegraf-middleware-console-time": "^2.1.0",
 		"telegraf-wikibase": "^0.13.0",
 		"wikibase-sdk": "^9.0.5"
@@ -27,7 +27,7 @@
 		"@sindresorhus/tsconfig": "^7.0.0",
 		"@types/node": "^20.17.9",
 		"typescript": "^5.7.2",
-		"xo": "^0.59.3"
+		"xo": "^0.60.0"
 	},
 	"xo": {
 		"rules": {
