@@ -19,7 +19,7 @@
 	},
 	"dependencies": {
 		"grammy": "^1.32.0",
-		"telegraf-middleware-console-time": "^2.1.0",
+		"telegraf-middleware-console-time": "^3.0.0",
 		"telegraf-wikibase": "^0.13.0",
 		"wikibase-sdk": "^9.0.5"
 	},
