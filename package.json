@@ -18,14 +18,14 @@
 		"node": ">=22"
 	},
 	"dependencies": {
-		"grammy": "^1.36.1",
+		"grammy": "^1.36.3",
 		"telegraf-middleware-console-time": "^3.0.0",
 		"telegraf-wikibase": "^0.13.0",
 		"wikibase-sdk": "^9.0.5"
 	},
 	"devDependencies": {
 		"@sindresorhus/tsconfig": "^7.0.0",
-		"@types/node": "^22.15.3",
+		"@types/node": "^22.15.29",
 		"typescript": "^5.8.3",
 		"xo": "^0.60.0"
 	},
