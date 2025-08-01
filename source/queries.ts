@@ -8,13 +8,11 @@ headers.set('user-agent', USER_AGENT);
 async function sparqlQuerySimplifiedMinified(query: string): Promise<string[]> {
 	const url = wdk.sparqlQuery(query);
 	const response = await fetch(url, {headers});
-	const results = await response.json() as SparqlResults;
+	const results = (await response.json()) as SparqlResults;
 	return simplifySparqlResults(results, {minimize: true}) as string[];
 }
 
-export async function getTopCategories(
-	topCategoryKind: string,
-): Promise<string[]> {
+export async function getTopCategories(topCategoryKind: string): Promise<string[]> {
 	const query = `SELECT ?topclass
 	WHERE {
 		SELECT ?topclass ?middleclass WHERE {

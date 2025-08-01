@@ -16,9 +16,7 @@ const twb = new TelegrafWikibase({
 
 const token = env['BOT_TOKEN'];
 if (!token) {
-	throw new Error(
-		'You have to provide the bot-token from @BotFather via environment variable (BOT_TOKEN)',
-	);
+	throw new Error('You have to provide the bot-token from @BotFather via environment variable (BOT_TOKEN)');
 }
 
 const baseBot = new Bot<Context>(token);
@@ -81,15 +79,11 @@ async function selectorButton(
 	};
 }
 
-async function selectorKeyboard(
-	context: Context,
-): Promise<InlineKeyboardButton[][]> {
+async function selectorKeyboard(context: Context): Promise<InlineKeyboardButton[][]> {
 	await context.wb.preload(Object.values(CATEGORIES));
-	const buttons = await Promise.all(
-		Object.values(CATEGORIES).map(async o => selectorButton(context, o)),
-	);
-	const sorted = buttons
-		.sort((a, b) => a.text.localeCompare(b.text, context.wb.locale()));
+	const buttons = await Promise.all(Object.values(CATEGORIES).map(async o => selectorButton(context, o)));
+	const sorted = buttons.sort((a, b) =>
+		a.text.localeCompare(b.text, context.wb.locale()));
 	const keyboard = getButtonsAsRows(sorted, 3);
 	return keyboard;
 }
@@ -105,15 +99,19 @@ bot.callbackQuery(/category:(Q\d+)/, async ctx => {
 
 bot.command(['start', 'help'], async context => {
 	let text = '';
-	text += 'When you chose a category you get 4 images from it. One of them does not fit into the same category as the other 3.';
+	text
+		+= 'When you chose a category you get 4 images from it. One of them does not fit into the same category as the other 3.';
 
 	if (context.message?.text === '/help') {
 		text += '\n\n';
-		text += 'All the data is coming from wikidata.org. Also this bot tries to respect your Telegram Client language for wikidata items when possible.';
+		text
+			+= 'All the data is coming from wikidata.org. Also this bot tries to respect your Telegram Client language for wikidata items when possible.';
 		text += '\n\n';
-		text += 'If you think something is wrong with the data use the link to the wikidata and improve it. 😎';
+		text
+			+= 'If you think something is wrong with the data use the link to the wikidata and improve it. 😎';
 		text += '\n';
-		text += 'Also you can send Pull Requests for this bot at https://github.com/EdJoPaTo/wikidata-misfit-bot. Maybe add another category. 🙃';
+		text
+			+= 'Also you can send Pull Requests for this bot at https://github.com/EdJoPaTo/wikidata-misfit-bot. Maybe add another category. 🙃';
 	}
 
 	return context.reply(text, {
@@ -128,16 +126,12 @@ bot.command('privacy', async ctx =>
 		{reply_markup: {remove_keyboard: true}},
 	));
 
-bot.filter(o => o.chat?.type === 'private').callbackQuery(
-	/^a:.+/,
-	async context =>
-		context.reply(
-			'Another one?',
-			{
-				reply_markup: {inline_keyboard: await selectorKeyboard(context)},
-			},
-		),
-);
+bot
+	.filter(o => o.chat?.type === 'private')
+	.callbackQuery(/^a:.+/, async context =>
+		context.reply('Another one?', {
+			reply_markup: {inline_keyboard: await selectorKeyboard(context)},
+		}));
 if (env['NODE_ENV'] !== 'production') {
 	bot.use(ctx => {
 		console.log('unhandled update', ctx.update);
@@ -162,9 +156,7 @@ async function preloadCategory(category: Category): Promise<void> {
 	console.timeEnd(identifier);
 }
 
-await Promise.all(
-	Object.keys(CATEGORIES).map(async o => preloadCategory(o as Category)),
-);
+await Promise.all(Object.keys(CATEGORIES).map(async o => preloadCategory(o as Category)));
 
 console.log(new Date(), 'cache filled');
 

@@ -41,8 +41,7 @@ function getRandomEntries<T>(array: readonly T[], amount = 1): T[] {
 		}
 	}
 
-	const entries = randomIds
-		.map(i => array[i]!);
+	const entries = randomIds.map(i => array[i]!);
 
 	return entries;
 }
@@ -59,9 +58,7 @@ async function pickItems(
 	const correctItems = getRandomEntries(allCorrect, 3);
 	const differentItem = getRandomEntries(allDifferent)[0]!;
 
-	const items = [
-		...correctItems,
-	];
+	const items = [...correctItems];
 	items.splice(
 		Math.floor(Math.random() * (items.length + 1)),
 		0,
@@ -75,9 +72,7 @@ async function pickItems(
 }
 
 async function create(context: Context, topCategoryKind: string) {
-	const topCategory = getRandomEntries(
-		await getTopCategories(topCategoryKind),
-	)[0]!;
+	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]!;
 	const subCategories = getRandomEntries(
 		await getSubCategories(topCategory),
 		2,
@@ -94,17 +89,13 @@ async function create(context: Context, topCategoryKind: string) {
 		differentItem,
 	]);
 
-	const mediaArray = await Promise.all(
-		items.map(async o => buildEntry(context, o)),
-	);
+	const mediaArray = await Promise.all(items.map(async o => buildEntry(context, o)));
 
 	let text = '';
 	text += await labeledItem(context, subCategories[0]!);
 
 	text += '\n\n';
-	text += mediaArray
-		.map(o => o.caption)
-		.join('\n');
+	text += mediaArray.map(o => o.caption).join('\n');
 
 	const keyboardButtons = items.map((o, i): InlineKeyboardButton => {
 		const text = `🚫 ${i + 1}`;
@@ -194,9 +185,7 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 		...originalItems,
 	]);
 
-	const commonCategoryLabels = await Promise.all(
-		commonCategoryItems.map(async o => labeledItem(context, o)),
-	);
+	const commonCategoryLabels = await Promise.all(commonCategoryItems.map(async o => labeledItem(context, o)));
 
 	const correctCategoryLabel = await labeledItem(context, correctCategory);
 	const differentCategoryLabel = await labeledItem(context, differentCategory);
@@ -205,16 +194,11 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 	text += commonCategoryLabels.join('\n');
 
 	text += '\n\n';
-	const oldLines = await Promise.all(
-		originalItems
-			.slice(1)
-			.map(async o => {
-				const emoji = o === differentItem ? '🚫' : '✅';
-				return `${emoji} ${await labeledItem(context, o)}`;
-			}),
-	);
-	text += oldLines
-		.join('\n');
+	const oldLines = await Promise.all(originalItems.slice(1).map(async o => {
+		const emoji = o === differentItem ? '🚫' : '✅';
+		return `${emoji} ${await labeledItem(context, o)}`;
+	}));
+	text += oldLines.join('\n');
 
 	text += '\n\n';
 	text += `✅3x ${correctCategoryLabel}`;
