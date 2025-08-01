@@ -1,7 +1,7 @@
 import {ok} from 'node:assert';
 import {test} from 'node:test';
-import {CATEGORIES} from './categories.js';
-import {getTopCategories} from './queries.js';
+import {CATEGORIES} from './categories.ts';
+import {getTopCategories} from './queries.ts';
 
 await test(
 	'category has enough subcategories',

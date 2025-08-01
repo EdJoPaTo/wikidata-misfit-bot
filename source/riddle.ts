@@ -1,12 +1,12 @@
 import {Composer} from 'grammy';
 import type {InlineKeyboardButton, MessageEntity} from 'grammy/types';
-import type {Context} from './context.js';
+import type {Context} from './context.ts';
 import {
 	commonParents,
 	getItems,
 	getSubCategories,
 	getTopCategories,
-} from './queries.js';
+} from './queries.ts';
 
 type MessageMedia = {
 	type: 'photo';

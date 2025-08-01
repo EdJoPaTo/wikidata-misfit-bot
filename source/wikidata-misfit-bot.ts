@@ -3,11 +3,11 @@ import {Bot} from 'grammy';
 import type {InlineKeyboardButton} from 'grammy/types';
 import {generateUpdateMiddleware} from 'telegraf-middleware-console-time';
 import {TelegrafWikibase} from 'telegraf-wikibase';
-import {CATEGORIES, type Category} from './categories.js';
-import type {Context} from './context.js';
-import {getButtonsAsRows} from './keyboard.js';
-import {getTopCategories} from './queries.js';
-import * as riddle from './riddle.js';
+import {CATEGORIES, type Category} from './categories.ts';
+import type {Context} from './context.ts';
+import {getButtonsAsRows} from './keyboard.ts';
+import {getTopCategories} from './queries.ts';
+import * as riddle from './riddle.ts';
 
 const twb = new TelegrafWikibase({
 	logQueriedEntityIds: env['NODE_ENV'] !== 'production',
