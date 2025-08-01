@@ -10,8 +10,8 @@
 		"url": "https://edjopato.de"
 	},
 	"scripts": {
-		"start": "tsc && node --enable-source-maps dist/wikidata-misfit-bot.js",
-		"test": "tsc && xo && node --enable-source-maps --test"
+		"start": "node --enable-source-maps source/wikidata-misfit-bot.ts",
+		"test": "tsc --noEmit && xo && node --enable-source-maps --test"
 	},
 	"type": "module",
 	"engines": {
