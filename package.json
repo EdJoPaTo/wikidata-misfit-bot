@@ -11,11 +11,16 @@
 	},
 	"scripts": {
 		"start": "node --enable-source-maps source/wikidata-misfit-bot.ts",
-		"test": "tsc --noEmit && xo && node --enable-source-maps --test"
+		"test": "tsc && xo && node --enable-source-maps --test"
 	},
 	"type": "module",
 	"engines": {
-		"node": ">=22"
+		"node": ">=24"
+	},
+	"devEngines": {
+		"packageManager": {
+			"name": "npm"
+		}
 	},
 	"dependencies": {
 		"grammy": "^1.36.1",
@@ -24,7 +29,7 @@
 		"wikibase-sdk": "^9.0.5"
 	},
 	"devDependencies": {
-		"@types/node": "^22.15.34",
+		"@types/node": "^24.10.1",
 		"typescript": "^5.9.2",
 		"xo": "^1.2.1"
 	},
