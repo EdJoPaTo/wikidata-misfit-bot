@@ -1,5 +1,5 @@
 import {Composer} from 'grammy';
-import type {InlineKeyboardButton, MessageEntity} from 'grammy/types';
+import type {InlineKeyboardButton} from 'grammy/types';
 import type {Context} from './context.ts';
 import {
 	commonParents,
@@ -169,7 +169,7 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 	const differentItem = context.match[3]!;
 
 	const originalItems: string[] = context.callbackQuery.message.entities
-		.filter((o): o is MessageEntity.TextLinkMessageEntity => 'url' in o)
+		.filter(o => 'url' in o)
 		.map(o => o.url)
 		.map(o => o.split('/').at(-1)!);
 
