@@ -18,7 +18,10 @@ await test(
 				async () => {
 					const result = await getTopCategories(qNumber);
 					console.log('category', category, result.length, result.join(' '));
-					ok(result.length >= 5);
+					ok(
+						result.length >= 5,
+						`category ${category} has only ${result.length}`,
+					);
 				},
 			)));
 	},
