@@ -27,5 +27,5 @@ jobs:
           deno-version: v2.x
       - uses: actions/checkout@v7
 
-      - run: deno cache ./**/*.ts
+      - run: npm ci
       - run: deno check ./**/*.ts
