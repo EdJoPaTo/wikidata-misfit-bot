@@ -1,18 +1,18 @@
-import {Composer} from 'grammy';
-import type {InlineKeyboardButton} from 'grammy/types';
-import type {Context} from './context.ts';
+import { Composer } from "grammy";
+import type { InlineKeyboardButton } from "grammy/types";
+import type { Context } from "./context.ts";
 import {
 	commonParents,
 	getItems,
 	getSubCategories,
 	getTopCategories,
-} from './queries.ts';
+} from "./queries.ts";
 
 type MessageMedia = {
-	type: 'photo';
+	type: "photo";
 	media: string;
 	caption: string;
-	parse_mode: 'Markdown';
+	parse_mode: "Markdown";
 };
 
 async function labeledItem(context: Context, item: string): Promise<string> {
@@ -41,7 +41,7 @@ function getRandomEntries<T>(array: readonly T[], amount = 1): T[] {
 		}
 	}
 
-	const entries = randomIds.map(i => array[i]!);
+	const entries = randomIds.map((i) => array[i]!);
 
 	return entries;
 }
@@ -49,7 +49,7 @@ function getRandomEntries<T>(array: readonly T[], amount = 1): T[] {
 async function pickItems(
 	correctQNumber: string,
 	differentQNumber: string,
-): Promise<{differentItem: string; items: string[]}> {
+): Promise<{ differentItem: string; items: string[] }> {
 	const [allCorrect, allDifferent]: [string[], string[]] = await Promise.all([
 		getItems(correctQNumber),
 		getItems(differentQNumber),
@@ -72,12 +72,14 @@ async function pickItems(
 }
 
 async function create(context: Context, topCategoryKind: string) {
-	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]!;
+	const topCategory = getRandomEntries(
+		await getTopCategories(topCategoryKind),
+	)[0]!;
 	const subCategories = getRandomEntries(
 		await getSubCategories(topCategory),
 		2,
 	);
-	const {items, differentItem} = await pickItems(
+	const { items, differentItem } = await pickItems(
 		subCategories[0]!,
 		subCategories[1]!,
 	);
@@ -89,20 +91,22 @@ async function create(context: Context, topCategoryKind: string) {
 		differentItem,
 	]);
 
-	const mediaArray = await Promise.all(items.map(async o => buildEntry(context, o)));
+	const mediaArray = await Promise.all(
+		items.map((o) => buildEntry(context, o)),
+	);
 
-	let text = '';
+	let text = "";
 	text += await labeledItem(context, subCategories[0]!);
 
-	text += '\n\n';
-	text += mediaArray.map(o => o.caption).join('\n');
+	text += "\n\n";
+	text += mediaArray.map((o) => o.caption).join("\n");
 
 	const keyboardButtons = items.map((o, i): InlineKeyboardButton => {
 		const text = `🚫 ${i + 1}`;
 		const data = o === differentItem
 			? `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`
-			: 'a-no';
-		return {text, callback_data: data};
+			: "a-no";
+		return { text, callback_data: data };
 	});
 
 	return {
@@ -116,20 +120,20 @@ export async function send(
 	context: Context,
 	topCategoryKind: string,
 ): Promise<void> {
-	const [{mediaArray, text, keyboardButtons}] = await Promise.all([
+	const [{ mediaArray, text, keyboardButtons }] = await Promise.all([
 		create(context, topCategoryKind),
-		context.replyWithChatAction('upload_photo'),
+		context.replyWithChatAction("upload_photo"),
 	]);
 
 	const [message] = await Promise.all([
 		context.replyWithMediaGroup(mediaArray),
-		context.replyWithChatAction('upload_photo'),
+		context.replyWithChatAction("upload_photo"),
 	]);
 
 	await context.reply(text, {
-		link_preview_options: {is_disabled: true},
-		parse_mode: 'Markdown',
-		reply_markup: {inline_keyboard: [keyboardButtons]},
+		link_preview_options: { is_disabled: true },
+		parse_mode: "Markdown",
+		reply_markup: { inline_keyboard: [keyboardButtons] },
 		reply_to_message_id: message.at(-1)!.message_id,
 	});
 }
@@ -145,23 +149,23 @@ async function buildEntry(
 	const imageUrl = getRandomEntries(images)[0]!;
 
 	return {
-		type: 'photo',
+		type: "photo",
 		media: imageUrl,
 		caption,
-		parse_mode: 'Markdown',
+		parse_mode: "Markdown",
 	};
 }
 
 export const bot = new Composer<Context>();
 
 bot.callbackQuery(
-	'a-no',
-	async ctx => ctx.answerCallbackQuery({text: '👎'}),
+	"a-no",
+	(ctx) => ctx.answerCallbackQuery({ text: "👎" }),
 );
 
 bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 	if (!context.callbackQuery.message?.entities || !context.match) {
-		throw new Error('something is wrong with the callback_data');
+		throw new Error("something is wrong with the callback_data");
 	}
 
 	const correctCategory = context.match[1]!;
@@ -169,9 +173,9 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 	const differentItem = context.match[3]!;
 
 	const originalItems: string[] = context.callbackQuery.message.entities
-		.filter(o => 'url' in o)
-		.map(o => o.url)
-		.map(o => o.split('/').at(-1)!);
+		.filter((o) => "url" in o)
+		.map((o) => o.url)
+		.map((o) => o.split("/").at(-1)!);
 
 	const commonCategoryItems = await commonParents(
 		correctCategory,
@@ -185,32 +189,36 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 		...originalItems,
 	]);
 
-	const commonCategoryLabels = await Promise.all(commonCategoryItems.map(async o => labeledItem(context, o)));
+	const commonCategoryLabels = await Promise.all(
+		commonCategoryItems.map((o) => labeledItem(context, o)),
+	);
 
 	const correctCategoryLabel = await labeledItem(context, correctCategory);
 	const differentCategoryLabel = await labeledItem(context, differentCategory);
 
-	let text = '';
-	text += commonCategoryLabels.join('\n');
+	let text = "";
+	text += commonCategoryLabels.join("\n");
 
-	text += '\n\n';
-	const oldLines = await Promise.all(originalItems.slice(1).map(async o => {
-		const emoji = o === differentItem ? '🚫' : '✅';
-		return `${emoji} ${await labeledItem(context, o)}`;
-	}));
-	text += oldLines.join('\n');
+	text += "\n\n";
+	const oldLines = await Promise.all(
+		originalItems.slice(1).map(async (o) => {
+			const emoji = o === differentItem ? "🚫" : "✅";
+			return `${emoji} ${await labeledItem(context, o)}`;
+		}),
+	);
+	text += oldLines.join("\n");
 
-	text += '\n\n';
+	text += "\n\n";
 	text += `✅3x ${correctCategoryLabel}`;
-	text += '\n';
+	text += "\n";
 	text += `🚫1x ${differentCategoryLabel}`;
 
 	await Promise.all([
 		context.editMessageText(text, {
-			parse_mode: 'Markdown',
-			link_preview_options: {is_disabled: true},
+			parse_mode: "Markdown",
+			link_preview_options: { is_disabled: true },
 		}),
-		context.answerCallbackQuery({text: '👍'}),
+		context.answerCallbackQuery({ text: "👍" }),
 	]);
 	return next();
 });

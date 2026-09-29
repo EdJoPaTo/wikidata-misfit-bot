@@ -1,18 +1,20 @@
-import {wdk} from 'wikibase-sdk/wikidata.org';
-import {simplifySparqlResults, type SparqlResults} from 'wikibase-sdk';
+import { wdk } from "wikibase-sdk/wikidata.org";
+import { simplifySparqlResults, type SparqlResults } from "wikibase-sdk";
 
-const USER_AGENT = 'github.com/EdJoPaTo/wikidata-misfit-bot';
+const USER_AGENT = "github.com/EdJoPaTo/wikidata-misfit-bot";
 const headers = new Headers();
-headers.set('user-agent', USER_AGENT);
+headers.set("user-agent", USER_AGENT);
 
 async function sparqlQuerySimplifiedMinified(query: string): Promise<string[]> {
 	const url = wdk.sparqlQuery(query);
-	const response = await fetch(url, {headers});
+	const response = await fetch(url, { headers });
 	const results = (await response.json()) as SparqlResults;
-	return simplifySparqlResults(results, {minimize: true}) as string[];
+	return simplifySparqlResults(results, { minimize: true }) as string[];
 }
 
-export async function getTopCategories(topCategoryKind: string): Promise<string[]> {
+export async function getTopCategories(
+	topCategoryKind: string,
+): Promise<string[]> {
 	const query = `SELECT ?topclass
 	WHERE {
 		SELECT ?topclass ?middleclass WHERE {
@@ -66,15 +68,15 @@ WHERE {
 export async function commonParents(...items: string[]): Promise<string[]> {
 	const queryLines: string[] = [];
 
-	queryLines.push('SELECT ?parent WHERE {');
+	queryLines.push("SELECT ?parent WHERE {");
 
 	for (const item of items) {
 		queryLines.push(`  wd:${item} wdt:P279 ?parent.`);
 	}
 
-	queryLines.push('}');
+	queryLines.push("}");
 
-	const query = queryLines.join('\n');
+	const query = queryLines.join("\n");
 	const results = await sparqlQuerySimplifiedMinified(query);
 	return results;
 }
