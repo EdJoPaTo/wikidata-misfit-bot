@@ -171,6 +171,10 @@ await Promise.all(
 
 console.log(new Date(), "cache filled");
 
+await baseBot.api.setMyShortDescription(
+	"This bot sends you some Wikidata item pictures. Find the Misfit!",
+);
+
 await baseBot.api.setMyCommands([
 	{ command: "start", description: "show the category selector" },
 	{ command: "help", description: "show help" },
