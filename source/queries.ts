@@ -1,4 +1,8 @@
-import { simplifySparqlResults, type SparqlResults } from "wikibase-sdk";
+import {
+	minimizeSimplifiedSparqlResults,
+	simplifySparqlResults,
+	type SparqlResults,
+} from "wikibase-sdk";
 import { wdk } from "wikibase-sdk/wikidata.org";
 
 const USER_AGENT = "github.com/EdJoPaTo/wikidata-misfit-bot";
@@ -10,8 +14,9 @@ async function sparqlQuerySimplifiedMinified(query: string): Promise<string[]> {
 	const response = await fetch(url, { headers });
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 	const results = (await response.json()) as SparqlResults;
+	const simplified = simplifySparqlResults(results);
 	// oxlint-disable-next-line typescript/no-unsafe-type-assertion
-	return simplifySparqlResults(results, { minimize: true }) as string[];
+	return minimizeSimplifiedSparqlResults(simplified) as string[];
 }
 
 export async function getTopCategories(topCategoryKind: string): Promise<string[]> {

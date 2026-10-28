@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
 		"erasableSyntaxOnly": true,
+		"exactOptionalPropertyTypes": true,
 		"module": "node20",
 		"moduleDetection": "force",
 		"noEmit": true,

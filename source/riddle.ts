@@ -112,7 +112,7 @@ export async function send(context: Context, topCategoryKind: string): Promise<v
 
 async function buildEntry(context: Context, item: string): Promise<MessageMedia> {
 	const reader = await context.wb.reader(item);
-	const images = reader.images(800);
+	const images = reader.imageUrls(800);
 	const caption = await labeledItem(context, item);
 
 	const imageUrl = getRandomEntries(images)[0]!;
