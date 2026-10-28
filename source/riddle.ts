@@ -1,12 +1,8 @@
 import { Composer } from "grammy";
 import type { InlineKeyboardButton } from "grammy/types";
+
 import type { Context } from "./context.ts";
-import {
-	commonParents,
-	getItems,
-	getSubCategories,
-	getTopCategories,
-} from "./queries.ts";
+import { commonParents, getItems, getSubCategories, getTopCategories } from "./queries.ts";
 
 type MessageMedia = {
 	type: "photo";
@@ -59,11 +55,7 @@ async function pickItems(
 	const differentItem = getRandomEntries(allDifferent)[0]!;
 
 	const items = [...correctItems];
-	items.splice(
-		Math.floor(Math.random() * (items.length + 1)),
-		0,
-		differentItem,
-	);
+	items.splice(Math.floor(Math.random() * (items.length + 1)), 0, differentItem);
 
 	return {
 		differentItem,
@@ -72,28 +64,13 @@ async function pickItems(
 }
 
 async function create(context: Context, topCategoryKind: string) {
-	const topCategory = getRandomEntries(
-		await getTopCategories(topCategoryKind),
-	)[0]!;
-	const subCategories = getRandomEntries(
-		await getSubCategories(topCategory),
-		2,
-	);
-	const { items, differentItem } = await pickItems(
-		subCategories[0]!,
-		subCategories[1]!,
-	);
+	const topCategory = getRandomEntries(await getTopCategories(topCategoryKind))[0]!;
+	const subCategories = getRandomEntries(await getSubCategories(topCategory), 2);
+	const { items, differentItem } = await pickItems(subCategories[0]!, subCategories[1]!);
 
-	await context.wb.preload([
-		topCategory,
-		...subCategories,
-		...items,
-		differentItem,
-	]);
+	await context.wb.preload([topCategory, ...subCategories, ...items, differentItem]);
 
-	const mediaArray = await Promise.all(
-		items.map((o) => buildEntry(context, o)),
-	);
+	const mediaArray = await Promise.all(items.map((o) => buildEntry(context, o)));
 
 	let text = "";
 	text += await labeledItem(context, subCategories[0]!);
@@ -101,13 +78,11 @@ async function create(context: Context, topCategoryKind: string) {
 	text += "\n\n";
 	text += mediaArray.map((o) => o.caption).join("\n");
 
-	const keyboardButtons = items.map((o, i): InlineKeyboardButton => {
-		const text = `🚫 ${i + 1}`;
-		const data = o === differentItem
-			? `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}`
-			: "a-no";
-		return { text, callback_data: data };
-	});
+	const keyboardButtons = items.map((o, i): InlineKeyboardButton => ({
+		text: `🚫 ${i + 1}`,
+		callback_data:
+			o === differentItem ? `a:${subCategories[0]!}:${subCategories[1]!}:${differentItem}` : "a-no",
+	}));
 
 	return {
 		keyboardButtons,
@@ -116,10 +91,7 @@ async function create(context: Context, topCategoryKind: string) {
 	};
 }
 
-export async function send(
-	context: Context,
-	topCategoryKind: string,
-): Promise<void> {
+export async function send(context: Context, topCategoryKind: string): Promise<void> {
 	const [{ mediaArray, text, keyboardButtons }] = await Promise.all([
 		create(context, topCategoryKind),
 		context.replyWithChatAction("upload_photo"),
@@ -134,14 +106,11 @@ export async function send(
 		link_preview_options: { is_disabled: true },
 		parse_mode: "Markdown",
 		reply_markup: { inline_keyboard: [keyboardButtons] },
-		reply_to_message_id: message.at(-1)!.message_id,
+		reply_parameters: { message_id: message.at(-1)!.message_id },
 	});
 }
 
-async function buildEntry(
-	context: Context,
-	item: string,
-): Promise<MessageMedia> {
+async function buildEntry(context: Context, item: string): Promise<MessageMedia> {
 	const reader = await context.wb.reader(item);
 	const images = reader.images(800);
 	const caption = await labeledItem(context, item);
@@ -158,12 +127,11 @@ async function buildEntry(
 
 export const bot = new Composer<Context>();
 
-bot.callbackQuery(
-	"a-no",
-	(ctx) => ctx.answerCallbackQuery({ text: "👎" }),
-);
+bot.callbackQuery("a-no", (ctx) => ctx.answerCallbackQuery({ text: "👎" }));
 
-bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
+// oxlint-disable-next-line max-lines-per-function
+bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/u, async (context, next) => {
+	// oxlint-disable-next-line typescript/strict-boolean-expressions
 	if (!context.callbackQuery.message?.entities || !context.match) {
 		throw new Error("something is wrong with the callback_data");
 	}
@@ -177,10 +145,7 @@ bot.callbackQuery(/a:(Q\d+):(Q\d+):(Q\d+)/, async (context, next) => {
 		.map((o) => o.url)
 		.map((o) => o.split("/").at(-1)!);
 
-	const commonCategoryItems = await commonParents(
-		correctCategory,
-		differentCategory,
-	);
+	const commonCategoryItems = await commonParents(correctCategory, differentCategory);
 
 	await context.wb.preload([
 		correctCategory,

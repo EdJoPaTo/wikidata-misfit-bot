@@ -1,12 +1,14 @@
 import { ok } from "node:assert";
 import { test } from "node:test";
+
 import { CATEGORIES } from "./categories.ts";
 import { getTopCategories } from "./queries.ts";
 
 await test(
 	"category has enough subcategories",
 	{
-		concurrency: 4, // Run multiple while not overwhelming Wikidata Servers
+		// Run multiple while not overwhelming Wikidata Servers
+		concurrency: 4,
 	},
 	async (t) => {
 		await Promise.all(
@@ -14,17 +16,15 @@ await test(
 				t.test(
 					category,
 					{
-						timeout: 1000 * 70 * 10, // 70 seconds
+						// 70 seconds
+						timeout: 1000 * 70,
 					},
 					async () => {
 						const result = await getTopCategories(qNumber);
 						console.log("category", category, result.length, result.join(" "));
-						ok(
-							result.length >= 5,
-							`category ${category} has only ${result.length}`,
-						);
+						ok(result.length >= 5, `category ${category} has only ${result.length}`);
 					},
-				)
+				),
 			),
 		);
 	},

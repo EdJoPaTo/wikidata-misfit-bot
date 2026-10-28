@@ -1,26 +1,11 @@
 {
 	"name": "wikidata-misfit-bot",
 	"private": true,
-	"version": "3.0.5",
 	"license": "MIT",
-	"repository": "EdJoPaTo/wikidata-misfit-bot",
-	"author": {
-		"name": "EdJoPaTo",
-		"email": "wikidata-misfit-bot@edjopato.de",
-		"url": "https://edjopato.de"
-	},
+	"type": "module",
 	"scripts": {
 		"start": "node --enable-source-maps source/wikidata-misfit-bot.ts",
-		"test": "tsc && node --enable-source-maps --test"
-	},
-	"type": "module",
-	"engines": {
-		"node": ">=24"
-	},
-	"devEngines": {
-		"packageManager": {
-			"name": "npm"
-		}
+		"test": "tsc && oxlint && oxfmt --check && node --enable-source-maps --test"
 	},
 	"dependencies": {
 		"grammy": "^1.36.1",
@@ -30,6 +15,17 @@
 	},
 	"devDependencies": {
 		"@types/node": "^24.10.1",
-		"typescript": "^6.0.2"
+		"oxfmt": "^0.75.0",
+		"oxlint": "^1.90.0",
+		"oxlint-tsgolint": "^7.0.2005",
+		"typescript": "^7.0.2"
+	},
+	"devEngines": {
+		"packageManager": {
+			"name": "npm"
+		}
+	},
+	"engines": {
+		"node": ">=24"
 	}
 }

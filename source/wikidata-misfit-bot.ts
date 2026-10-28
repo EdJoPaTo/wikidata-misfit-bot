@@ -1,8 +1,10 @@
 import { env } from "node:process";
+
 import { Bot } from "grammy";
 import type { InlineKeyboardButton } from "grammy/types";
 import { generateUpdateMiddleware } from "telegraf-middleware-console-time";
 import { TelegrafWikibase } from "telegraf-wikibase";
+
 import { CATEGORIES, type Category } from "./categories.ts";
 import type { Context } from "./context.ts";
 import { getButtonsAsRows } from "./keyboard.ts";
@@ -55,11 +57,7 @@ async function endlessFailing(
 		await riddle.send(ctx, categoryQNumber);
 	} catch (error: unknown) {
 		if (attempt < 2) {
-			console.error(
-				"endlessFailing",
-				attempt,
-				error instanceof Error ? error.message : error,
-			);
+			console.error("endlessFailing", attempt, error instanceof Error ? error.message : error);
 		} else {
 			console.error("endlessFailing", attempt, error);
 		}
@@ -81,21 +79,16 @@ async function selectorButton(
 	};
 }
 
-async function selectorKeyboard(
-	context: Context,
-): Promise<InlineKeyboardButton[][]> {
+async function selectorKeyboard(context: Context): Promise<InlineKeyboardButton[][]> {
 	await context.wb.preload(Object.values(CATEGORIES));
 	const buttons = await Promise.all(
 		Object.values(CATEGORIES).map((o) => selectorButton(context, o)),
 	);
-	const sorted = buttons.sort((a, b) =>
-		a.text.localeCompare(b.text, context.wb.locale())
-	);
-	const keyboard = getButtonsAsRows(sorted, 3);
-	return keyboard;
+	buttons.sort((a, b) => a.text.localeCompare(b.text, context.wb.locale()));
+	return getButtonsAsRows(buttons, 3);
 }
 
-bot.callbackQuery(/category:(Q\d+)/, async (ctx) => {
+bot.callbackQuery(/category:(Q\d+)/u, async (ctx) => {
 	try {
 		await ctx.answerCallbackQuery();
 		await ctx.editMessageText("One of the images does not fit…");
@@ -133,14 +126,16 @@ bot.command("privacy", (ctx) =>
 	ctx.reply(
 		"This bot does not store any data about you and works stateless. It requests Wikidata with a common identity for all users, so Wikidata can not distinguish any users of this bot. See the source code at https://github.com/EdJoPaTo/wikidata-misfit-bot",
 		{ reply_markup: { remove_keyboard: true } },
-	));
+	),
+);
 
 bot
 	.filter((o) => o.chat?.type === "private")
-	.callbackQuery(/^a:.+/, async (context) =>
+	.callbackQuery(/^a:.+/u, async (context) =>
 		context.reply("Another one?", {
 			reply_markup: { inline_keyboard: await selectorKeyboard(context) },
-		}));
+		}),
+	);
 if (env["NODE_ENV"] !== "production") {
 	bot.use((ctx) => {
 		console.log("unhandled update", ctx.update);
@@ -154,20 +149,14 @@ async function preloadCategory(category: Category): Promise<void> {
 	try {
 		await getTopCategories(qNumber);
 	} catch (error: unknown) {
-		console.log(
-			identifier,
-			"failed",
-			qNumber,
-			error instanceof Error ? error.message : error,
-		);
+		console.log(identifier, "failed", qNumber, error instanceof Error ? error.message : error);
 	}
 
 	console.timeEnd(identifier);
 }
 
-await Promise.all(
-	Object.keys(CATEGORIES).map((o) => preloadCategory(o as Category)),
-);
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
+await Promise.all(Object.keys(CATEGORIES).map((o) => preloadCategory(o as Category)));
 
 console.log(new Date(), "cache filled");
 
